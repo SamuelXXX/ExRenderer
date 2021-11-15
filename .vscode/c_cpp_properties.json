@@ -1,0 +1,12 @@
+{
+    "configurations": [
+        {
+            "name": "path settings",
+            "includePath": [
+                "${default}",
+                "${workspaceRoot}\\libs\\include"
+            ]
+        }
+    ],
+    "version": 4
+}
