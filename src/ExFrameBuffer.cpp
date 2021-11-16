@@ -87,14 +87,14 @@ namespace ExRenderer
         return Color(m_buffer[idx+2],m_buffer[idx+1],m_buffer[idx],m_buffer[idx+3]);
     }
 
-    void FrameBuffer::MixPixel(uint32_t x, uint32_t y, const Color &color, uint32_t ratio)
+    void FrameBuffer::MixPixel(uint32_t x, uint32_t y, const Color &color, uint32_t alpha)
     {
         if(x<m_width&&y<m_height)
         {
             uint32_t idx=(y*m_width+x)*4;
-            m_buffer[idx]=(uint32_t)color.b*ratio/255+(uint32_t)m_buffer[idx]*(255-ratio)/255;
-            m_buffer[idx+1]=(uint32_t)color.g*ratio/255+(uint32_t)m_buffer[idx+1]*(255-ratio)/255;
-            m_buffer[idx+2]=(uint32_t)color.r*ratio/255+(uint32_t)m_buffer[idx+2]*(255-ratio)/255;
+            m_buffer[idx]=color.b*alpha/255+m_buffer[idx]*(255-alpha)/255;
+            m_buffer[idx+1]=color.g*alpha/255+m_buffer[idx+1]*(255-alpha)/255;
+            m_buffer[idx+2]=color.r*alpha/255+m_buffer[idx+2]*(255-alpha)/255;
         }
     }
 

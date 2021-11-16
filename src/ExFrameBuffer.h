@@ -43,6 +43,7 @@ namespace ExRenderer
         Color GetPixel(uint32_t, uint32_t);
         void MixPixel(uint32_t, uint32_t, const Color &, uint32_t);
 
+    public: // Primitive
         void DrawLine(uint32_t, uint32_t,uint32_t, uint32_t, const Color &);
         void DrawCircle(uint32_t,uint32_t,uint32_t,const Color &);
         void DrawFilledCircle(uint32_t,uint32_t,uint32_t,const Color &);
