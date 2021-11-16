@@ -12,6 +12,22 @@ namespace ExRenderer
         return m_frame.GetData();
     }
 
+    void ForwardPipelineRenderer::SetCameraFov(float fov)
+    {
+
+    }
+
+    void ForwardPipelineRenderer::SetCameraTransform(const Vector3& position, const Vector3 &rotation)
+    {
+        Matrix4x4 matrix(position,rotation);
+        viewMatrix=matrix.Inverse();
+    }
+
+    void ForwardPipelineRenderer::SetModelTransform(const Vector3 &position, const Vector3 &rotation)
+    {
+        modelMatrix=Matrix4x4(position,rotation);
+    }
+
     ScreenPosition ForwardPipelineRenderer::NormalToScreen(const Vector3 &nPos)
     {
         uint32_t x=(nPos.x+1)*m_width/2;

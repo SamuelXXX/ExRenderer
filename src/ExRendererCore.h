@@ -27,9 +27,9 @@ namespace ExRenderer
         ForwardPipelineRenderer(uint32_t,uint32_t);
 
     public:
-        void SetModelMatrix(const Matrix4x4 &);
-        void SetViewMatrix(const Matrix4x4 &);
-        void SetProjectionMatrix(const Matrix4x4 &);
+        void SetCameraFov(float);
+        void SetCameraTransform(const Vector3&,const Vector3&);
+        void SetModelTransform(const Vector3&,const Vector3&);
         ScreenPosition NormalToScreen(const Vector3 &);
 
     public:
