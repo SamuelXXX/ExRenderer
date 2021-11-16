@@ -44,11 +44,14 @@ void UpdateRenderer(ForwardPipelineRenderer &renderer, int frameIndex)
     mBuilder.AppendTriangle(0,3,2);
 
     Mesh m=mBuilder.GenerateMesh();
-    renderer.DrawWireMesh(m,Color(255,0,0,255));
+    renderer.DrawWireMeshNormalize(m,Color(255,0,0,255));
 }
 
 int main(int argc, char* args[])
 {
+    MathTestBench();
+
+    
 	int w = 1280, h = 720;
     SDL_Init(SDL_INIT_EVERYTHING);
 

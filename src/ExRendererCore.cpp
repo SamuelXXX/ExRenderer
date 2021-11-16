@@ -24,7 +24,7 @@ namespace ExRenderer
         m_frame.Clear(color);
     }
 
-    void ForwardPipelineRenderer::DrawLine(const Vector3 &p1,const Vector3 &p2, const Color &color)
+    void ForwardPipelineRenderer::DrawLineNormalize(const Vector3 &p1,const Vector3 &p2, const Color &color)
     {
         ScreenPosition sp1=NormalToScreen(p1);
         ScreenPosition sp2=NormalToScreen(p2);
@@ -32,16 +32,16 @@ namespace ExRenderer
         m_frame.DrawLine(sp1.x,sp1.y,sp2.x,sp2.y,color);
     }
 
-    void ForwardPipelineRenderer::DrawWireMesh(Mesh &mesh,const Color &color)
+    void ForwardPipelineRenderer::DrawWireMeshNormalize(Mesh &mesh,const Color &color)
     {
         for(auto &m:mesh)
         {
             VerticeType* v1=m.first;
             VerticeType* v2=m.second;
             VerticeType* v3=m.third;
-            DrawLine(v1->position,v2->position,color);
-            DrawLine(v2->position,v3->position,color);
-            DrawLine(v3->position,v1->position,color);
+            DrawLineNormalize(v1->position,v2->position,color);
+            DrawLineNormalize(v2->position,v3->position,color);
+            DrawLineNormalize(v3->position,v1->position,color);
         }
     }
 }

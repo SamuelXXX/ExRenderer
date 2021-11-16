@@ -37,8 +37,8 @@ namespace ExRenderer
 
     public:
         void Clear(const Color &);
-        void DrawWireMesh(Mesh &,const Color &);
-        void DrawLine(const Vector3&,const Vector3&,const Color &);
+        void DrawWireMeshNormalize(Mesh &,const Color &);
+        void DrawLineNormalize(const Vector3&,const Vector3&,const Color &);
     };
 
     // Forward Render Pipeline
