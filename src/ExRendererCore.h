@@ -14,8 +14,13 @@ namespace ExRenderer
         uint32_t y;
         ScreenPosition(uint32_t x,uint32_t y):x(x),y(y){}
     };
+
     class ForwardPipelineRenderer
     {
+        SDL_Texture *sdlTexture;
+        SDL_Window *sdlWindow;
+        SDL_Renderer *sdlRenderer;
+
         uint32_t m_width,m_height;
         FrameBuffer m_frame;
         Matrix4x4 modelMatrix;
@@ -28,6 +33,11 @@ namespace ExRenderer
     public:
         ForwardPipelineRenderer() = default;
         ForwardPipelineRenderer(uint32_t,uint32_t);
+    
+    public:
+        void InitializeEnv(const char *);
+        bool UpdateEnv();
+        void FinalizeEnv();
 
     public:
         void SetCameraFov(float,float,float);
@@ -40,11 +50,42 @@ namespace ExRenderer
 
     public:
         void Clear(const Color &);
-        void DrawWireMesh(Mesh &,const Color &);
-        void DrawWireMeshNormalize(Mesh &,const Color &);
         void DrawLineNormalize(const Vector3&,const Vector3&,const Color &);
         void DrawLine(const Vector3&,const Vector3&,const Color &);
+
+        template <class VT>
+        void DrawWireMesh(Mesh<VT> &,const Color &);
+        template <class VT>
+        void DrawWireMeshNormalize(Mesh<VT> &,const Color &);
     };
+
+    template <class VT>
+    void ForwardPipelineRenderer::DrawWireMeshNormalize(Mesh<VT> &mesh,const Color &color)
+    {
+        for(auto &m:mesh)
+        {
+            VT* v1=m.vertex1;
+            VT* v2=m.vertex2;
+            VT* v3=m.vertex3;
+            DrawLineNormalize(v1->position,v2->position,color);
+            DrawLineNormalize(v2->position,v3->position,color);
+            DrawLineNormalize(v3->position,v1->position,color);
+        }
+    }
+
+    template <class VT>
+    void ForwardPipelineRenderer::DrawWireMesh(Mesh<VT> &mesh,const Color &color)
+    {
+        for(auto &m:mesh)
+        {
+            VT* v1=m.vertex1;
+            VT* v2=m.vertex2;
+            VT* v3=m.vertex3;
+            DrawLine(v1->position,v2->position,color);
+            DrawLine(v2->position,v3->position,color);
+            DrawLine(v3->position,v1->position,color);
+        }
+    }
 
     // Forward Render Pipeline
 

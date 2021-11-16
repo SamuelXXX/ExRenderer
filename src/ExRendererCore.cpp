@@ -7,6 +7,32 @@ namespace ExRenderer
         m_frame=FrameBuffer(w,h);
     }
 
+    void ForwardPipelineRenderer::InitializeEnv(const char *title)
+    {
+        SDL_Init(SDL_INIT_EVERYTHING);
+
+        sdlWindow = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, m_width, m_height, 0);
+        sdlRenderer = SDL_CreateRenderer(sdlWindow, -1, SDL_RENDERER_ACCELERATED);
+        sdlTexture = SDL_CreateTexture(sdlRenderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STREAMING, m_width, m_height);
+    }
+
+    bool ForwardPipelineRenderer::UpdateEnv()
+    {
+        SDL_UpdateTexture(sdlTexture, nullptr, this->GetFrameBuffer(), m_width * 4);
+        SDL_RenderCopy(sdlRenderer, sdlTexture, nullptr, nullptr);
+        SDL_RenderPresent(sdlRenderer);
+
+        SDL_Event event;
+        SDL_PollEvent(&event);
+        return event.type==SDL_QUIT;
+    }
+
+    void ForwardPipelineRenderer::FinalizeEnv()
+    {
+        SDL_DestroyRenderer(sdlRenderer);
+        SDL_DestroyWindow(sdlWindow);
+    }
+
     const uint8_t *ForwardPipelineRenderer::GetFrameBuffer()
     {
         return m_frame.GetData();
@@ -62,19 +88,6 @@ namespace ExRenderer
         m_frame.DrawLine(sp1.x,sp1.y,sp2.x,sp2.y,color);
     }
 
-    void ForwardPipelineRenderer::DrawWireMeshNormalize(Mesh &mesh,const Color &color)
-    {
-        for(auto &m:mesh)
-        {
-            VerticeType* v1=m.first;
-            VerticeType* v2=m.second;
-            VerticeType* v3=m.third;
-            DrawLineNormalize(v1->position,v2->position,color);
-            DrawLineNormalize(v2->position,v3->position,color);
-            DrawLineNormalize(v3->position,v1->position,color);
-        }
-    }
-
     void ForwardPipelineRenderer::DrawLine(const Vector3 &p1,const Vector3 &p2, const Color &color)
     {
         Vector4 np1=mvpMatrix*Vector4(p1);
@@ -84,18 +97,5 @@ namespace ExRenderer
         np2=np2/np2.w;
 
         DrawLineNormalize(Vector3(np1.x,np1.y,np1.z),Vector3(np2.x,np2.y,np2.z),color);
-    }
-
-    void ForwardPipelineRenderer::DrawWireMesh(Mesh &mesh,const Color &color)
-    {
-        for(auto &m:mesh)
-        {
-            VerticeType* v1=m.first;
-            VerticeType* v2=m.second;
-            VerticeType* v3=m.third;
-            DrawLine(v1->position,v2->position,color);
-            DrawLine(v2->position,v3->position,color);
-            DrawLine(v3->position,v1->position,color);
-        }
     }
 }
