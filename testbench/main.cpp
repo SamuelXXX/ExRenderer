@@ -10,9 +10,9 @@ void UpdateRenderer(ForwardPipelineRenderer &renderer, int frameIndex)
     static Mesh<BasicVertex> cubeMesh=MeshBuilder<BasicVertex>::Cube();
 
     renderer.Clear(Color(0, 0, 0, 255));
-    renderer.SetCameraFov(3.1415/2,0.05,100);
+    renderer.SetCameraFov(3.1415/3,0.05,100);
     renderer.SetCameraTransform(Vector3(0,0,-3),Vector3::zero());
-    renderer.SetModelTransform(Vector3::zero(),Vector3(0,(float)frameIndex/100,0));
+    renderer.SetModelTransform(Vector3::zero(),Vector3(0,(float)frameIndex/100,(float)frameIndex/200));
     
     renderer.DrawWireMesh(cubeMesh, Color(255, 0, 0, 255));
 }
