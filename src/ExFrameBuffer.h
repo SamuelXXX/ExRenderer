@@ -9,6 +9,15 @@ namespace ExRenderer
     {
         uint8_t b,g,r,a;
         Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a) : r(r), g(g), b(b), a(a) {}
+
+        Color AntiAlisingMix(const Color &back, uint32_t error, uint32_t stdError)
+        {
+            int offError=stdError-error;
+            return Color(this->r*error/stdError+back.r*offError/stdError,
+                            this->g*error/stdError+back.g*offError/stdError,
+                            this->b*error/stdError+back.b*offError/stdError,
+                            255);
+        }
     };
 
     class FrameBuffer
@@ -29,9 +38,14 @@ namespace ExRenderer
         const uint8_t *GetData(){return m_buffer;}
 
     public:
-        void DrawPixel(uint32_t, uint32_t, const Color &);
-        void DrawPixel(uint32_t, uint32_t, uint8_t, uint8_t, uint8_t, uint8_t);
+        void SetPixel(uint32_t, uint32_t, const Color &);
+        void SetPixel(uint32_t, uint32_t, uint8_t, uint8_t, uint8_t, uint8_t);
+        Color GetPixel(uint32_t, uint32_t);
+        void MixPixel(uint32_t, uint32_t, const Color &, uint32_t);
+
         void DrawLine(uint32_t, uint32_t,uint32_t, uint32_t, const Color &);
+        void DrawCircle(uint32_t,uint32_t,uint32_t,const Color &);
+        void DrawFilledCircle(uint32_t,uint32_t,uint32_t,const Color &);
         void Clear(const Color&);
     };
 }
