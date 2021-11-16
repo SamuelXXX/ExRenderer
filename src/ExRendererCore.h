@@ -21,13 +21,16 @@ namespace ExRenderer
         Matrix4x4 modelMatrix;
         Matrix4x4 viewMatrix;
         Matrix4x4 projectionMatrix;
+        Matrix4x4 mvpMatrix;
+
+        void updateMvpMatrix();
 
     public:
         ForwardPipelineRenderer() = default;
         ForwardPipelineRenderer(uint32_t,uint32_t);
 
     public:
-        void SetCameraFov(float);
+        void SetCameraFov(float,float,float);
         void SetCameraTransform(const Vector3&,const Vector3&);
         void SetModelTransform(const Vector3&,const Vector3&);
         ScreenPosition NormalToScreen(const Vector3 &);
@@ -37,8 +40,10 @@ namespace ExRenderer
 
     public:
         void Clear(const Color &);
+        void DrawWireMesh(Mesh &,const Color &);
         void DrawWireMeshNormalize(Mesh &,const Color &);
         void DrawLineNormalize(const Vector3&,const Vector3&,const Color &);
+        void DrawLine(const Vector3&,const Vector3&,const Color &);
     };
 
     // Forward Render Pipeline
