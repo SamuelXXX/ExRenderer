@@ -40,7 +40,7 @@ namespace ExRenderer
         void FinalizeEnv();
 
     public:
-        void SetCameraFov(float,float,float);
+        void SetCameraParams(float,float,float);
         void SetCameraTransform(const Vector3&,const Vector3&);
         void SetModelTransform(const Vector3&,const Vector3&);
         ScreenPosition NormalToScreen(const Vector3 &);

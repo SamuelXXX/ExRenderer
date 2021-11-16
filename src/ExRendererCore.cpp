@@ -43,7 +43,7 @@ namespace ExRenderer
         mvpMatrix=projectionMatrix*viewMatrix*modelMatrix;
     }
 
-    void ForwardPipelineRenderer::SetCameraFov(float fov, float nearPlane, float farPlane)
+    void ForwardPipelineRenderer::SetCameraParams(float fov, float nearPlane, float farPlane)
     {
         float aspect=(float)m_width/m_height;
         float cotHalfFov=cos(fov/2)/sin(fov/2);
