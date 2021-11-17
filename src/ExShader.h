@@ -17,7 +17,6 @@ namespace ExRenderer
         Vector3 position;
         Vector3 color;
 
-        Vector3 GetPosition();
         FragmentData operator*(number_t);
         FragmentData operator+(const FragmentData&);
     };

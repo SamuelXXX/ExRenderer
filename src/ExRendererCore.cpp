@@ -172,9 +172,9 @@ namespace ExRenderer
         f2.fragment=shader.VertexShader(v2);
         f3.fragment=shader.VertexShader(v3);    
 
-        f1.screenPos=NormalToScreen(f1.fragment.GetPosition());
-        f2.screenPos=NormalToScreen(f2.fragment.GetPosition());
-        f3.screenPos=NormalToScreen(f3.fragment.GetPosition());
+        f1.screenPos=NormalToScreen(f1.fragment.position);
+        f2.screenPos=NormalToScreen(f2.fragment.position);
+        f3.screenPos=NormalToScreen(f3.fragment.position);
 
         int32_t min_sx,max_sx,min_sy,max_sy;
         min_sx=Min(f1.screenPos.x,f2.screenPos.x,f3.screenPos.x);

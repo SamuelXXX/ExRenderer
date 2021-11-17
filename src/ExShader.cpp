@@ -2,11 +2,6 @@
 
 namespace ExRenderer
 {
-    Vector3 FragmentData::GetPosition()
-    {
-        return position;
-    }
-
     FragmentData FragmentData::operator*(number_t ratio)
     {
         FragmentData result;
