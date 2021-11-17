@@ -18,7 +18,7 @@ namespace ExRenderer
 
     bool ForwardPipelineRenderer::UpdateEnv()
     {
-        SDL_UpdateTexture(sdlTexture, nullptr, this->GetFrameBuffer(), m_width * 4);
+        SDL_UpdateTexture(sdlTexture, nullptr, this->m_frame.GetData(), m_width * 4);
         SDL_RenderCopy(sdlRenderer, sdlTexture, nullptr, nullptr);
         SDL_RenderPresent(sdlRenderer);
 
@@ -31,11 +31,6 @@ namespace ExRenderer
     {
         SDL_DestroyRenderer(sdlRenderer);
         SDL_DestroyWindow(sdlWindow);
-    }
-
-    const uint8_t *ForwardPipelineRenderer::GetFrameBuffer()
-    {
-        return m_frame.GetData();
     }
 
     void ForwardPipelineRenderer::updateMvpMatrix()
