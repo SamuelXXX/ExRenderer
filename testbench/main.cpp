@@ -27,6 +27,10 @@ void UpdateRenderer(ForwardPipelineRenderer &renderer, int frameIndex)
     v3.position=Vector3(0,1,0);v3.color=Vector3(0,0,1);
     
     renderer.RenderTriangle(demoShader,v1,v2,v3);
+
+    renderer.SetModelTransform(Vector3(1,1,1),Vector3(0,(float)frameIndex/100,(float)frameIndex/200));
+    psShader.SetColor(Vector4(1,0,0,1));
+    renderer.RenderMesh(cubeMesh,psShader);
     renderer.RenderDepth();
 }
 
