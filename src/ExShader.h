@@ -49,8 +49,8 @@ namespace ExRenderer
     class DemoShader:public Shader<VertexData,FragmentData>
     {
         public:
-        virtual FragmentData VertexShader(const VertexData&) override;
-        virtual Vector4 FragmentShader(const FragmentData&) override;
+        FragmentData VertexShader(const VertexData&) override;
+        Vector4 FragmentShader(const FragmentData&) override;
     };
 }
 #endif
