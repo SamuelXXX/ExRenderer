@@ -57,15 +57,14 @@ namespace ExRenderer
         const uint8_t *GetFrameBuffer();
 
     public:
-        void RenderTriangle(Shader&,const VertexData &,const VertexData &,const VertexData &);
-
-    public:
         void Clear(const Color &);
         void DrawLineNormalize(const Vector3&,const Vector3&,const Color &);
         void DrawLine(const Vector3&,const Vector3&,const Color &);
 
         template <class VT>
         void DrawWireMesh(Mesh<VT> &,const Color &);
+
+        void RenderTriangle(Shader&,const VertexData &,const VertexData &,const VertexData &);
         template <class VT>
         void RenderMesh(Mesh<VT> &,Shader &);
     };
