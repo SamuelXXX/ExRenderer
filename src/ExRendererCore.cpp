@@ -90,13 +90,10 @@ namespace ExRenderer
 
     void ForwardPipelineRenderer::DrawLine(const Vector3 &p1,const Vector3 &p2, const Color &color)
     {
-        Vector4 np1=mvpMatrix*Vector4(p1);
-        Vector4 np2=mvpMatrix*Vector4(p2);
+        Vector3 np1=mvpMatrix*p1;
+        Vector3 np2=mvpMatrix*p2;
 
-        np1=np1/np1.w;
-        np2=np2/np2.w;
-
-        DrawLineNormalize(Vector3(np1.x,np1.y,np1.z),Vector3(np2.x,np2.y,np2.z),color);
+        DrawLineNormalize(np1,np2,color);
     }
 
     inline int32_t Min(int32_t v1, int32_t v2, int32_t v3)
@@ -167,7 +164,7 @@ namespace ExRenderer
         return Color(color.x,color.y,color.z,color.w);
     }
 
-    void ForwardPipelineRenderer::RendererTriangle(Shader &shader,const VertexData &v1,const VertexData &v2,const VertexData &v3)
+    void ForwardPipelineRenderer::RenderTriangle(Shader &shader,const VertexData &v1,const VertexData &v2,const VertexData &v3)
     {
         RasterizeFragment f1,f2,f3;
         shader.InjectConsts(modelMatrix,viewMatrix,projectionMatrix);

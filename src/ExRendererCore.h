@@ -57,7 +57,7 @@ namespace ExRenderer
         const uint8_t *GetFrameBuffer();
 
     public:
-        void RendererTriangle(Shader&,const VertexData &,const VertexData &,const VertexData &);
+        void RenderTriangle(Shader&,const VertexData &,const VertexData &,const VertexData &);
 
     public:
         void Clear(const Color &);
@@ -67,22 +67,8 @@ namespace ExRenderer
         template <class VT>
         void DrawWireMesh(Mesh<VT> &,const Color &);
         template <class VT>
-        void DrawWireMeshNormalize(Mesh<VT> &,const Color &);
+        void RenderMesh(Mesh<VT> &,Shader &);
     };
-
-    template <class VT>
-    void ForwardPipelineRenderer::DrawWireMeshNormalize(Mesh<VT> &mesh,const Color &color)
-    {
-        for(auto &m:mesh)
-        {
-            VT* v1=m.vertex1;
-            VT* v2=m.vertex2;
-            VT* v3=m.vertex3;
-            DrawLineNormalize(v1->position,v2->position,color);
-            DrawLineNormalize(v2->position,v3->position,color);
-            DrawLineNormalize(v3->position,v1->position,color);
-        }
-    }
 
     template <class VT>
     void ForwardPipelineRenderer::DrawWireMesh(Mesh<VT> &mesh,const Color &color)
@@ -95,6 +81,18 @@ namespace ExRenderer
             DrawLine(v1->position,v2->position,color);
             DrawLine(v2->position,v3->position,color);
             DrawLine(v3->position,v1->position,color);
+        }
+    }
+
+    template <class VT>
+    void ForwardPipelineRenderer::RenderMesh(Mesh<VT> &mesh,Shader &shader)
+    {
+        for(auto &m:mesh)
+        {
+            VT* v1=m.vertex1;
+            VT* v2=m.vertex2;
+            VT* v3=m.vertex3;
+            RenderTriangle(shader,*v1,*v2,*v3);
         }
     }
 
