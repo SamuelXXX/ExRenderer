@@ -31,7 +31,7 @@ namespace ExRenderer
         Matrix4x4 MVPMatrix;
         Matrix4x4 VPMatrix;
 
-    protected:
+    public:
         bool zTest;
         bool zWrite;
 

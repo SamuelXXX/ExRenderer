@@ -115,14 +115,21 @@ namespace ExRenderer
                 {
                     FT rf = f1 * weight.x + f2 * weight.y + f3 * weight.z;
                     float d=m_depth.TestDepth(x,y,rf.position.z);
-                    if(d>0)
+                    if(shader.zTest&&d>0)
+                    {
                         continue;
+                    }
                     
                     Vector4 color = shader.FragmentShader(rf);
                     Color trueColor = Utils::ConvertColor(color);
                     
                     m_frame.SetPixel(x, y, trueColor);
-                    m_depth.SetDepth(x, y, rf.position.z);
+                    if(shader.zTest&&shader.zWrite&&d<0)
+                    {
+                        float d=m_depth.TestDepth(x,y,rf.position.z);
+                        m_depth.SetDepth(x, y, rf.position.z);;
+                    }
+                    
                 }
             }
         }
