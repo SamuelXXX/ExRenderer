@@ -16,7 +16,7 @@ void UpdateRenderer(ForwardPipelineRenderer &renderer, int frameIndex)
     renderer.SetModelTransform(Vector3::zero(),Vector3(0,(float)frameIndex/100,(float)frameIndex/200));
     
     
-    // renderer.RenderMesh(cubeMesh,shader);
+    renderer.RenderMesh(cubeMesh,shader);
     renderer.DrawWireMesh(cubeMesh, Color(255, 0, 0, 255));
 
 
