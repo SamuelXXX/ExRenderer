@@ -98,7 +98,7 @@ namespace ExRenderer
         }
     }
 
-    void FrameBuffer::DrawLine(uint32_t xBegin, uint32_t yBegin,uint32_t xEnd, uint32_t yEnd, const Color &color)
+    void FrameBuffer::DrawLine(int32_t xBegin, int32_t yBegin,int32_t xEnd, int32_t yEnd, const Color &color)
     {
         int dx = xEnd-xBegin, sx = xBegin<xEnd ? 1 : -1;
         int dy = yEnd-yBegin, sy = yBegin<yEnd ? 1 : -1; 

@@ -12,8 +12,8 @@ void UpdateRenderer(ForwardPipelineRenderer &renderer, int frameIndex)
     PureColorShader psShader;
     std::cout<<frameIndex<<std::endl;
     renderer.Clear(Color(255, 255, 255, 255));
-    renderer.SetCameraParams(3.1415/3,0.05,100);
-    renderer.SetCameraTransform(Vector3(0,0,-5),Vector3::zero());
+    renderer.SetCameraParams(3.1415/2,0.5,10);
+    renderer.SetCameraTransform(Vector3(0,0,-2),Vector3::zero());
     renderer.SetModelTransform(Vector3::zero(),Vector3(0,(float)frameIndex/100,(float)frameIndex/200));
     
     psShader.SetColor(Vector4(0,1,0,1));
@@ -27,6 +27,7 @@ void UpdateRenderer(ForwardPipelineRenderer &renderer, int frameIndex)
     v3.position=Vector3(0,1,0);v3.color=Vector3(0,0,1);
     
     renderer.RenderTriangle(demoShader,v1,v2,v3);
+    renderer.RenderDepth();
 }
 
 int main(int argc, char *args[])

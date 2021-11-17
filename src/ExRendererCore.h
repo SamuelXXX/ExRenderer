@@ -54,6 +54,7 @@ namespace ExRenderer
         void Clear(const Color &);
         void DrawLineNormalize(const Vector3 &, const Vector3 &, const Color &);
         void DrawLine(const Vector3 &, const Vector3 &, const Color &);
+        void RenderDepth();
 
         template <class VT>
         void DrawWireMesh(Mesh<VT> &, const Color &);
@@ -114,6 +115,8 @@ namespace ExRenderer
                 if (weight.x > 0 && weight.y > 0 && weight.z > 0)
                 {
                     FT rf = f1 * weight.x + f2 * weight.y + f3 * weight.z;
+                    if(rf.position.z<-1||rf.position.z>1)
+                        continue;
                     float d=m_depth.TestDepth(x,y,rf.position.z);
                     if(shader.zTest&&d>0)
                     {

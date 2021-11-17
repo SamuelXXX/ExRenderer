@@ -93,5 +93,18 @@ namespace ExRenderer
         DrawLineNormalize(np1,np2,color);
     }
 
+    void ForwardPipelineRenderer::RenderDepth()
+    {
+        for(uint32_t i=0;i<m_width;++i)
+        {
+            for(uint32_t j=0;j<m_height;++j)
+            {
+                float d=m_depth.GetDepth(i,j);
+                d=1-(d+1)/2;
+                m_frame.SetPixel(i,j,Utils::ConvertColor(Vector4(d,d,d,1)));
+            }
+        }
+    }
+
     
 }
