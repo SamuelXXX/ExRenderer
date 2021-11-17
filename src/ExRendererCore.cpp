@@ -192,8 +192,6 @@ namespace ExRenderer
                             Vector3(f3.screenPos.x,f3.screenPos.y,1));
         mulMatrix=mulMatrix.Inverse();
 
-        std::vector<RasterizeFragment> fragments;
-
         for(int32_t y=min_sy;y<=max_sy;++y)
         {
             for(int32_t x=min_sx;x<=max_sx;++x)
