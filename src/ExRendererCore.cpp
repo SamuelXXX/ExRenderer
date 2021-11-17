@@ -43,8 +43,8 @@ namespace ExRenderer
     {
         float aspect=(float)m_width/m_height;
         float cotHalfFov=cos(fov/2)/sin(fov/2);
-        projectionMatrix=Matrix4x4(Vector4(cotHalfFov/aspect,0,0,0),
-                                    Vector4(0,cotHalfFov,0,0),
+        projectionMatrix=Matrix4x4(Vector4(-cotHalfFov/aspect,0,0,0),
+                                    Vector4(0,-cotHalfFov,0,0),
                                     Vector4(0,0,-(farPlane+nearPlane)/(farPlane-nearPlane),-1),
                                     Vector4(0,0,2*nearPlane*farPlane/(farPlane-nearPlane),0));
         updateMvpMatrix();
