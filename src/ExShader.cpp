@@ -18,16 +18,7 @@ namespace ExRenderer
         return result;
     }
 
-    void Shader::InjectConsts(const Matrix4x4 &m,const Matrix4x4 &v,const Matrix4x4 &p)
-    {
-        modelMatrix=m;
-        viewMatrix=v;
-        projectionMatrix=p;
-        MVPMatrix=p*v*m;
-        VPMatrix=p*v;
-    }
-
-    FragmentData Shader::VertexShader(const VertexData &vertex)
+    FragmentData DemoShader::VertexShader(const VertexData &vertex)
     {
         FragmentData result;
         result.color=vertex.color;
@@ -35,7 +26,7 @@ namespace ExRenderer
         return result;
     }
 
-    Vector4 Shader::FragmentShader(const FragmentData &fragment)
+    Vector4 DemoShader::FragmentShader(const FragmentData &fragment)
     {
         return Vector4(fragment.color);
     }

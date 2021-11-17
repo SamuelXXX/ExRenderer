@@ -8,7 +8,7 @@ using namespace ExRenderer;
 void UpdateRenderer(ForwardPipelineRenderer &renderer, int frameIndex)
 {
     static Mesh<VertexData> cubeMesh=MeshBuilder<VertexData>::Cube();
-    Shader shader;
+    DemoShader shader;
     std::cout<<frameIndex<<std::endl;
     renderer.Clear(Color(255, 255, 255, 255));
     renderer.SetCameraParams(3.1415/3,0.05,100);

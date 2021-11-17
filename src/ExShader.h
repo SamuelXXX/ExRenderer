@@ -21,8 +21,10 @@ namespace ExRenderer
         FragmentData operator+(const FragmentData&);
     };
 
+    template <class VT,class FT>
     class Shader
     {
+    protected:
         Matrix4x4 modelMatrix;
         Matrix4x4 viewMatrix;
         Matrix4x4 projectionMatrix;
@@ -30,11 +32,25 @@ namespace ExRenderer
         Matrix4x4 VPMatrix;
 
     public:
-        void InjectConsts(const Matrix4x4&,const Matrix4x4&,const Matrix4x4&);
+        void InjectConsts(const Matrix4x4 &m,const Matrix4x4 &v,const Matrix4x4 &p)
+        {
+            modelMatrix=m;
+            viewMatrix=v;
+            projectionMatrix=p;
+            MVPMatrix=p*v*m;
+            VPMatrix=p*v;
+        }
 
     public:
-        FragmentData VertexShader(const VertexData&);
-        Vector4 FragmentShader(const FragmentData&);
+        virtual FT VertexShader(const VT&)=0;
+        virtual Vector4 FragmentShader(const FT&)=0;
+    };
+
+    class DemoShader:public Shader<VertexData,FragmentData>
+    {
+        public:
+        virtual FragmentData VertexShader(const VertexData&) override;
+        virtual Vector4 FragmentShader(const FragmentData&) override;
     };
 }
 #endif
