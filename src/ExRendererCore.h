@@ -126,7 +126,6 @@ namespace ExRenderer
                     m_frame.SetPixel(x, y, trueColor);
                     if(shader.zTest&&shader.zWrite&&d<0)
                     {
-                        float d=m_depth.TestDepth(x,y,rf.position.z);
                         m_depth.SetDepth(x, y, rf.position.z);;
                     }
                     
