@@ -70,8 +70,8 @@ namespace ExRenderer
 
     ScreenPosition ForwardPipelineRenderer::NormalToScreen(const Vector3 &nPos)
     {
-        uint32_t x=(nPos.x+1)*m_width/2;
-        uint32_t y=(1-nPos.y)*m_height/2;
+        int32_t x=(nPos.x+1)*m_width/2;
+        int32_t y=(1-nPos.y)*m_height/2;
         return ScreenPosition(x,y);
     }
 
@@ -97,5 +97,119 @@ namespace ExRenderer
         np2=np2/np2.w;
 
         DrawLineNormalize(Vector3(np1.x,np1.y,np1.z),Vector3(np2.x,np2.y,np2.z),color);
+    }
+
+    inline int32_t Min(int32_t v1, int32_t v2, int32_t v3)
+    {
+        int32_t min=v1;
+        if(v2<min)
+            min=v2;
+        if(v3<min)
+            min=v3;
+        return min;
+    }
+
+    inline int32_t Max(int32_t v1, int32_t v2, int32_t v3)
+    {
+        int32_t max=v1;
+        if(v2>max)
+            max=v2;
+        if(v3>max)
+            max=v3;
+        return max;
+    }
+
+    inline int32_t Clamp(int32_t value,int32_t min,int32_t max)
+    {
+        if(value<min)
+            return min;
+        if(value>max)
+            return max;
+        return value;
+    }
+
+    inline Color ConvertColor(const Vector4 &vcolor)
+    {
+        Vector4 color(vcolor*255);
+        if(color.x>255)
+        {
+            color.x=255;
+        }
+        if(color.x<0)
+        {
+            color.x=0;
+        }
+        if(color.y>255)
+        {
+            color.y=255;
+        }
+        if(color.y<0)
+        {
+            color.y=0;
+        }
+        if(color.z>255)
+        {
+            color.z=255;
+        }
+        if(color.z<0)
+        {
+            color.z=0;
+        }
+        if(color.w>255)
+        {
+            color.w=255;
+        }
+        if(color.w<0)
+        {
+            color.w=0;
+        }
+
+        return Color(color.x,color.y,color.z,color.w);
+    }
+
+    void ForwardPipelineRenderer::RendererTriangle(Shader &shader,const VertexData &v1,const VertexData &v2,const VertexData &v3)
+    {
+        RasterizeFragment f1,f2,f3;
+        shader.InjectConsts(modelMatrix,viewMatrix,projectionMatrix);
+        f1.fragment=shader.VertexShader(v1);
+        f2.fragment=shader.VertexShader(v2);
+        f3.fragment=shader.VertexShader(v3);    
+
+        f1.screenPos=NormalToScreen(f1.fragment.GetPosition());
+        f2.screenPos=NormalToScreen(f2.fragment.GetPosition());
+        f3.screenPos=NormalToScreen(f3.fragment.GetPosition());
+
+        int32_t min_sx,max_sx,min_sy,max_sy;
+        min_sx=Min(f1.screenPos.x,f2.screenPos.x,f3.screenPos.x);
+        max_sx=Max(f1.screenPos.x,f2.screenPos.x,f3.screenPos.x);
+        min_sy=Min(f1.screenPos.y,f2.screenPos.y,f3.screenPos.y);
+        max_sy=Max(f1.screenPos.y,f2.screenPos.y,f3.screenPos.y);
+        min_sx=Clamp(min_sx,0,m_width);
+        max_sx=Clamp(max_sx,0,m_width);
+        min_sy=Clamp(min_sy,0,m_height);
+        max_sy=Clamp(max_sy,0,m_height);
+        
+
+        Matrix3x3 mulMatrix(Vector3(f1.screenPos.x,f1.screenPos.y,1),
+                            Vector3(f2.screenPos.x,f2.screenPos.y,1),
+                            Vector3(f3.screenPos.x,f3.screenPos.y,1));
+        mulMatrix=mulMatrix.Inverse();
+
+        std::vector<RasterizeFragment> fragments;
+
+        for(int32_t y=min_sy;y<=max_sy;++y)
+        {
+            for(int32_t x=min_sx;x<=max_sx;++x)
+            {
+                Vector3 weight=mulMatrix*Vector3(x,y,1);
+                if(weight.x>0&&weight.y>0&&weight.z>0)
+                {
+                    FragmentData rf=f1.fragment*weight.x+f2.fragment*weight.y+f3.fragment*weight.z;
+                    Vector4 color=shader.FragmentShader(rf);
+                    Color trueColor=ConvertColor(color);
+                    m_frame.SetPixel(x,y,trueColor);
+                }
+            }
+        }
     }
 }

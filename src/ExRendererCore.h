@@ -5,14 +5,22 @@
 #include "ExFrameBuffer.h"
 #include "ExMesh.h"
 #include <SDL2/SDL.h>
+#include "ExShader.h"
 
 namespace ExRenderer
 {
     struct ScreenPosition
     {
-        uint32_t x;
-        uint32_t y;
-        ScreenPosition(uint32_t x,uint32_t y):x(x),y(y){}
+        int32_t x;
+        int32_t y;
+        ScreenPosition()=default;
+        ScreenPosition(int32_t x,int32_t y):x(x),y(y){}
+    };
+
+    struct RasterizeFragment
+    {
+        ScreenPosition screenPos;
+        FragmentData fragment;
     };
 
     class ForwardPipelineRenderer
@@ -47,6 +55,9 @@ namespace ExRenderer
 
     public:
         const uint8_t *GetFrameBuffer();
+
+    public:
+        void RendererTriangle(Shader&,const VertexData &,const VertexData &,const VertexData &);
 
     public:
         void Clear(const Color &);

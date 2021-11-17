@@ -656,7 +656,7 @@ namespace ExRenderer
             return r;
         }
 
-        Matrix4x4(const Vector3 &position, const Quaternion &rotation)
+        Matrix4x4(const Vector3 &position, const Quaternion &rotation) 
         {
             Vector4 col1 = Vector4(rotation * Vector3(1, 0, 0));
             Vector4 col2 = Vector4(rotation * Vector3(0, 1, 0));
@@ -677,7 +677,7 @@ namespace ExRenderer
             new (this) Matrix4x4(col1, col2, col3, col4);
         }
 
-        Matrix4x4 operator+(const Matrix4x4 &other)
+        Matrix4x4 operator+(const Matrix4x4 &other) const
         {
             Matrix4x4 result;
             for (int i = 0; i < 16; ++i)
@@ -687,7 +687,7 @@ namespace ExRenderer
 
             return result;
         }
-        Matrix4x4 operator-(const Matrix4x4 &other)
+        Matrix4x4 operator-(const Matrix4x4 &other) const
         {
             Matrix4x4 result;
             for (int i = 0; i < 16; ++i)
@@ -697,7 +697,7 @@ namespace ExRenderer
 
             return result;
         }
-        Matrix4x4 operator-()
+        Matrix4x4 operator-() const
         {
             Matrix4x4 result;
             for (int i = 0; i < 16; ++i)
@@ -707,7 +707,7 @@ namespace ExRenderer
 
             return result;
         }
-        Matrix4x4 operator*(number_t ratio)
+        Matrix4x4 operator*(number_t ratio) const
         {
             Matrix4x4 result;
             for (int i = 0; i < 16; ++i)
@@ -717,7 +717,7 @@ namespace ExRenderer
 
             return result;
         }
-        Matrix4x4 operator/(number_t ratio)
+        Matrix4x4 operator/(number_t ratio) const
         {
             Matrix4x4 result;
             for (int i = 0; i < 16; ++i)
@@ -727,7 +727,7 @@ namespace ExRenderer
 
             return result;
         }
-        Matrix4x4 operator*(const Matrix4x4 &other)
+        Matrix4x4 operator*(const Matrix4x4 &other) const
         {
             Matrix4x4 result;
 
@@ -742,7 +742,7 @@ namespace ExRenderer
 
             return result;
         }
-        Vector4 operator*(const Vector4 &vec)
+        Vector4 operator*(const Vector4 &vec) const
         {
             Vector4 result;
 
@@ -754,11 +754,11 @@ namespace ExRenderer
             return result;
         }
 
-        Vector3 operator*(const Vector3 &vec)
+        Vector3 operator*(const Vector3 &vec) const
         {
             Vector4 v(vec);
             v = (*this) * v;
-            return Vector3(v.x, v.y, v.z);
+            return Vector3(v.x, v.y, v.z)/v.w;
         }
 
         static Matrix4x4 identity()
