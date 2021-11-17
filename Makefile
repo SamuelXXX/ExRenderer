@@ -48,7 +48,7 @@ $(SDL_DLL_FILE):$(SDL_DLL_FROM_FILE)
 	@echo Copy SDL dll files
 	@copy $(SDL_DLL_FROM_FILE) $(SDL_DLL_FILE)
 
-$(EXRD_OBJ_PATH)/%.o : $(EXRD_SRC_PATH)/%.cpp $(TEST_HEADER_FILES)
+$(EXRD_OBJ_PATH)/%.o : $(EXRD_SRC_PATH)/%.cpp $(EXRD_HEADER_FILES)
 	@echo Building EXRD Object : $@
 	@mkdir $(@D)||:
 	@g++ $< $(CXXFLAGS) -o $@ -I$(SDL_INC_PATH)
