@@ -3,6 +3,7 @@
 
 #include "ExMath.h"
 #include "ExFrameBuffer.h"
+#include "ExDepthBuffer.h"
 #include "ExMesh.h"
 #include <SDL2/SDL.h>
 #include "ExShader.h"
@@ -18,12 +19,6 @@ namespace ExRenderer
         ScreenPosition(int32_t x, int32_t y) : x(x), y(y) {}
     };
 
-    struct RasterizeFragment
-    {
-        ScreenPosition screenPos;
-        FragmentData fragment;
-    };
-
     class ForwardPipelineRenderer
     {
         SDL_Texture *sdlTexture;
@@ -32,6 +27,7 @@ namespace ExRenderer
 
         uint32_t m_width, m_height;
         FrameBuffer m_frame;
+        DepthBuffer m_depth;
         Matrix4x4 modelMatrix;
         Matrix4x4 viewMatrix;
         Matrix4x4 projectionMatrix;
@@ -118,9 +114,15 @@ namespace ExRenderer
                 if (weight.x > 0 && weight.y > 0 && weight.z > 0)
                 {
                     FT rf = f1 * weight.x + f2 * weight.y + f3 * weight.z;
+                    float d=m_depth.TestDepth(x,y,rf.position.z);
+                    if(d>0)
+                        continue;
+                    
                     Vector4 color = shader.FragmentShader(rf);
                     Color trueColor = Utils::ConvertColor(color);
+                    
                     m_frame.SetPixel(x, y, trueColor);
+                    m_depth.SetDepth(x, y, rf.position.z);
                 }
             }
         }

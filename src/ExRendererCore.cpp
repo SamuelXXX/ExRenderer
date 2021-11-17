@@ -5,6 +5,7 @@ namespace ExRenderer
     ForwardPipelineRenderer::ForwardPipelineRenderer(uint32_t w, uint32_t h):m_width(w),m_height(h)
     {
         m_frame=FrameBuffer(w,h);
+        m_depth=DepthBuffer(w,h);
     }
 
     void ForwardPipelineRenderer::InitializeEnv(const char *title)
@@ -45,7 +46,7 @@ namespace ExRenderer
         projectionMatrix=Matrix4x4(Vector4(cotHalfFov/aspect,0,0,0),
                                     Vector4(0,cotHalfFov,0,0),
                                     Vector4(0,0,-(farPlane+nearPlane)/(farPlane-nearPlane),-1),
-                                    Vector4(0,0,-2*nearPlane*farPlane/(farPlane-nearPlane),0));
+                                    Vector4(0,0,2*nearPlane*farPlane/(farPlane-nearPlane),0));
         updateMvpMatrix();
         
     }
@@ -73,6 +74,7 @@ namespace ExRenderer
     void ForwardPipelineRenderer::Clear(const Color &color)
     {
         m_frame.Clear(color);
+        m_depth.Clear();
     }
 
     void ForwardPipelineRenderer::DrawLineNormalize(const Vector3 &p1,const Vector3 &p2, const Color &color)

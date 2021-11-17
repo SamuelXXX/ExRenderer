@@ -31,5 +31,17 @@ namespace ExRenderer
         return Vector4(fragment.color);
     }
 
+    FragmentData PureColorShader::VertexShader(const VertexData &vertex)
+    {
+        FragmentData result;
+        result.position=MVPMatrix*vertex.position;
+        return result;
+    }
+
+    Vector4 PureColorShader::FragmentShader(const FragmentData &fragment)
+    {
+        return color;
+    }
+
      
 }
