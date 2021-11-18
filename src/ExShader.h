@@ -6,9 +6,19 @@
 
 namespace ExRenderer
 {
+    enum ZTestType{
+            Always=0,
+            Less,
+            LessEqual,
+            Equal,
+            GreatEqual,
+            Great,
+            NotEqual
+        };
+
     template <class VT, class FT>
     class Shader
-    {
+    {   
     protected:
         Matrix4x4 modelMatrix;
         Matrix4x4 viewMatrix;
@@ -17,7 +27,7 @@ namespace ExRenderer
         Matrix4x4 VPMatrix;
 
     public:
-        bool zTest;
+        ZTestType zTest;
         bool zWrite;
 
     public:

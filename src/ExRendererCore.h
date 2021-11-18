@@ -118,7 +118,18 @@ namespace ExRenderer
                     if(rf.position.z<-1||rf.position.z>1)
                         continue;
                     float d=m_depth.TestDepth(x,y,rf.position.z);
-                    if(shader.zTest&&d>0)
+                    bool zTestPassed=false;
+                    switch(shader.zTest)
+                    {
+                        case ZTestType::Always:zTestPassed=true; break;
+                        case ZTestType::Less:zTestPassed=(d<0); break;
+                        case ZTestType::LessEqual:zTestPassed=(d<=0); break;
+                        case ZTestType::Equal:zTestPassed=(d==0); break;
+                        case ZTestType::GreatEqual:zTestPassed=(d>=0); break;
+                        case ZTestType::Great:zTestPassed=(d>0); break;
+                        case ZTestType::NotEqual:zTestPassed=(d!=0);break;
+                    }
+                    if(!zTestPassed)
                     {
                         continue;
                     }
@@ -127,7 +138,7 @@ namespace ExRenderer
                     Color trueColor = Utils::ConvertColor(color);
                     
                     m_frame.SetPixel(x, y, trueColor);
-                    if(shader.zTest&&shader.zWrite&&d<0)
+                    if(zTestPassed&&shader.zWrite)
                     {
                         m_depth.SetDepth(x, y, rf.position.z);;
                     }

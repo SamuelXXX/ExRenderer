@@ -35,7 +35,7 @@ namespace ExRenderer::Testbench::Basic
     public:
         DemoShader()
         {
-            zTest = true;
+            zTest = ZTestType::LessEqual;
             zWrite = true;
         }
 
@@ -53,6 +53,29 @@ namespace ExRenderer::Testbench::Basic
         }
     };
 
+    class CullShader : public Shader<VertexData, FragmentData>
+    {
+    public:
+        CullShader()
+        {
+            zTest = ZTestType::Great;
+            zWrite = false;
+        }
+
+    public:
+        FragmentData VertexShader(const VertexData &vertex) override
+        {
+            FragmentData result;
+            result.color=vertex.color;
+            result.position=MVPMatrix*vertex.position;
+            return result;
+        }
+        Vector4 FragmentShader(const FragmentData &fragment) override
+        {
+            return Vector4(1,0,0,1);
+        }
+    };
+
     class PureColorShader : public Shader<VertexData, FragmentData>
     {
         Vector4 color;
@@ -60,7 +83,7 @@ namespace ExRenderer::Testbench::Basic
     public:
         PureColorShader()
         {
-            zTest = true;
+            zTest = ZTestType::LessEqual;
             zWrite = true;
         }
 
@@ -79,7 +102,9 @@ namespace ExRenderer::Testbench::Basic
         }
         Vector4 FragmentShader(const FragmentData &fragment) override
         {
-            return color;
+            float depth = 1-(fragment.position.z+1)/2;
+            return Vector4(depth,depth,depth,1);
+            // return color;
         }
     };
 
@@ -88,6 +113,8 @@ namespace ExRenderer::Testbench::Basic
         static Mesh<VertexData> cubeMesh=MeshBuilder<VertexData>::Cube();
         DemoShader demoShader;
         PureColorShader psShader;
+        CullShader cullShader;
+
         std::cout<<frameIndex<<std::endl;
         renderer.Clear(Color(255, 255, 255, 255));
         renderer.SetCameraParams(3.1415/2,0.5,10);
@@ -96,8 +123,13 @@ namespace ExRenderer::Testbench::Basic
         
         psShader.SetColor(Vector4(0,1,0,1));
         renderer.RenderMesh(cubeMesh,psShader);
-        renderer.DrawWireMesh(cubeMesh, Color(255, 0, 0, 255));
+        // renderer.DrawWireMesh(cubeMesh, Color(255, 0, 0, 255));
         // renderer.DrawLine(Vector3(0,0,0),Vector3(0,0,0),Color(255,0,0,255));
+
+        renderer.SetModelTransform(Vector3(1,1,1),Vector3(0,(float)frameIndex/100,(float)frameIndex/200));
+        psShader.SetColor(Vector4(1,0,0,1));
+        renderer.RenderMesh(cubeMesh,psShader);
+
 
         VertexData v1,v2,v3;
         v1.position=Vector3(1,0,0);v1.color=Vector3(1,0,0);
@@ -105,10 +137,7 @@ namespace ExRenderer::Testbench::Basic
         v3.position=Vector3(0,1,0);v3.color=Vector3(0,0,1);
         
         renderer.RenderTriangle(demoShader,v1,v2,v3);
-
-        renderer.SetModelTransform(Vector3(1,1,1),Vector3(0,(float)frameIndex/100,(float)frameIndex/200));
-        psShader.SetColor(Vector4(1,0,0,1));
-        renderer.RenderMesh(cubeMesh,psShader);
+        renderer.RenderTriangle(cullShader,v1,v2,v3);
         // renderer.RenderDepth();
     }
 
