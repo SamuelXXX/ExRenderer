@@ -31,10 +31,10 @@ namespace ExRenderer::Testbench::Basic
         }
     };
 
-    class DemoShader : public Shader<VertexData, FragmentData>
+    class ColorfulShader : public Shader<VertexData, FragmentData>
     {
     public:
-        DemoShader()
+        ColorfulShader()
         {
             zTest = ZTestType::LessEqual;
             zWrite = true;
@@ -81,8 +81,6 @@ namespace ExRenderer::Testbench::Basic
 
     class PureColorShader : public Shader<VertexData, FragmentData>
     {
-        Vector4 color;
-
     public:
         PureColorShader()
         {
@@ -91,9 +89,29 @@ namespace ExRenderer::Testbench::Basic
         }
 
     public:
-        void SetColor(const Vector4 &c)
+        FragmentData VertexShader(const VertexData &vertex) override
         {
-            color = c;
+            FragmentData result;
+            result.position=MVPMatrix*vertex.position;
+            float r=vertex.position.x+0.5;
+            float g=vertex.position.y+0.5;
+            float b=vertex.position.z+0.5;
+            result.color=Vector3(r,g,b);
+            return result;
+        }
+        Vector4 FragmentShader(const FragmentData &fragment) override
+        {
+            return Vector4(fragment.color);
+        }
+    };
+
+    class DepthShader : public Shader<VertexData, FragmentData>
+    {
+    public:
+        DepthShader()
+        {
+            zTest = ZTestType::LessEqual;
+            zWrite = true;
         }
 
     public:
@@ -107,15 +125,15 @@ namespace ExRenderer::Testbench::Basic
         {
             float depth = 1-(fragment.position.z+1)/2;
             return Vector4(depth,depth,depth,1);
-            // return color;
         }
     };
 
     void UpdateRenderer(ForwardPipelineRenderer &renderer, float deltaTime)
     {
-        static DemoShader demoShader;
+        static ColorfulShader colorShader;
         static PureColorShader psShader;
         static CullShader cullShader;
+        static DepthShader depthShader;
         static Mesh<VertexData> cubeMesh=MeshBuilder<VertexData>::Cube();
         static Vector3 rotation1(0,0,0),rotation2(0,0,0),rotation3(0,0,0);
         static Vector3 position1(0,0,0),position2(1,1,2),position3(0,0.6,0.5);
@@ -136,13 +154,13 @@ namespace ExRenderer::Testbench::Basic
         position1=position1+Vector3(deltaTime*0.1,0,0);
 
         renderer.SetModelTransform(position1,rotation1); // Cube1
-        renderer.RenderMesh(cubeMesh,psShader);
+        renderer.RenderMesh(cubeMesh,depthShader);
 
         renderer.SetModelTransform(position2,rotation2); // Cube2
         renderer.RenderMesh(cubeMesh,psShader);
 
         renderer.SetModelTransform(position3,rotation3); // Colorful Triangle
-        renderer.RenderTriangle(demoShader,v1,v2,v3);
+        renderer.RenderTriangle(colorShader,v1,v2,v3);
         renderer.RenderTriangle(cullShader,v1,v2,v3);
         // renderer.RenderCoordinate();
         // renderer.RenderDepth();
