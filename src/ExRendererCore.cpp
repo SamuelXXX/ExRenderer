@@ -106,5 +106,12 @@ namespace ExRenderer
         }
     }
 
+    void ForwardPipelineRenderer::RenderCoordinate()
+    {
+        DrawLine(Vector3(0,0,0),Vector3(1,0,0),Color(255,0,0,255));
+        DrawLine(Vector3(0,0,0),Vector3(0,1,0),Color(0,255,0,255));
+        DrawLine(Vector3(0,0,0),Vector3(0,0,1),Color(0,0,255,255));
+    }
+
     
 }

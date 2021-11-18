@@ -55,6 +55,7 @@ namespace ExRenderer
         void DrawLineNormalize(const Vector3 &, const Vector3 &, const Color &);
         void DrawLine(const Vector3 &, const Vector3 &, const Color &);
         void RenderDepth();
+        void RenderCoordinate();
 
         template <class VT>
         void DrawWireMesh(Mesh<VT> &, const Color &);
@@ -87,6 +88,10 @@ namespace ExRenderer
         f1 = shader.VertexShader(v1);
         f2 = shader.VertexShader(v2);
         f3 = shader.VertexShader(v3);
+
+        Vector3 faceDir=Utils::CalTriangleFaceDir(f1.position,f2.position,f3.position);
+        if(faceDir.z>0) // Cull backface
+            return;
 
         sp1 = NormalToScreen(f1.position);
         sp2 = NormalToScreen(f2.position);

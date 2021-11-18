@@ -20,7 +20,7 @@ namespace ExRenderer
     void MeshBuilder<VT>::AddQuad(uint32_t index0,uint32_t index1,uint32_t index2,uint32_t index3)
     {
         AddTriangle(index0, index1, index2);
-        AddTriangle(index0, index3, index2);
+        AddTriangle(index0, index2, index3);
     }
 
     template<class VT>
@@ -55,11 +55,11 @@ namespace ExRenderer
         mBuilder.AddVertex(v7);
         mBuilder.AddVertex(v8);
         mBuilder.AddQuad(0,1,2,3); // forward
-        mBuilder.AddQuad(4,5,6,7); // back
-        mBuilder.AddQuad(0,1,5,4); // up
-        mBuilder.AddQuad(2,3,7,6); // down
-        mBuilder.AddQuad(0,4,7,3); // left
-        mBuilder.AddQuad(1,2,6,5); // right            
+        mBuilder.AddQuad(5,4,7,6); // back
+        mBuilder.AddQuad(1,0,4,5); // up
+        mBuilder.AddQuad(2,6,7,3); // down
+        mBuilder.AddQuad(0,3,7,4); // left
+        mBuilder.AddQuad(1,5,6,2); // right            
         return mBuilder.GenerateMesh();
     }
 }

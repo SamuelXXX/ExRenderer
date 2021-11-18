@@ -73,6 +73,13 @@ namespace ExRenderer::Utils
 
         return Color(color.x,color.y,color.z,color.w);
     }
+
+    inline Vector3 CalTriangleFaceDir(const Vector3 &v1,const Vector3 &v2,const Vector3 &v3)
+    {
+        Vector3 dir1=v2-v1;
+        Vector3 dir2=v3-v2;
+        return Cross(dir2,dir1);
+    }
 }
 
 #endif
