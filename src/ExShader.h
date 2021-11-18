@@ -29,6 +29,15 @@ namespace ExRenderer
     public:
         ZTestType zTest;
         bool zWrite;
+        bool doubleSide;
+
+        Shader<VT,FT>()
+        {
+            zTest=ZTestType::LessEqual;
+            zWrite=true;
+            doubleSide=false;
+        }
+
 
     public:
         void InjectConsts(const Matrix4x4 &m, const Matrix4x4 &v, const Matrix4x4 &p)

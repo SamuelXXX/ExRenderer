@@ -89,9 +89,13 @@ namespace ExRenderer
         f2 = shader.VertexShader(v2);
         f3 = shader.VertexShader(v3);
 
-        Vector3 faceDir=Utils::CalTriangleFaceDir(f1.position,f2.position,f3.position);
-        if(faceDir.z>0) // Cull backface
-            return;
+        if(!shader.doubleSide)
+        {
+            Vector3 faceDir=Utils::CalTriangleFaceDir(f1.position,f2.position,f3.position);
+            if(faceDir.z>0) // Cull backface
+                return;
+        }
+        
 
         sp1 = NormalToScreen(f1.position);
         sp2 = NormalToScreen(f2.position);

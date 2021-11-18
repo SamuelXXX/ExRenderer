@@ -37,6 +37,7 @@ namespace ExRenderer::Testbench::Basic
         {
             zTest = ZTestType::LessEqual;
             zWrite = true;
+            doubleSide=true;
         }
 
     public:
@@ -60,6 +61,7 @@ namespace ExRenderer::Testbench::Basic
         {
             zTest = ZTestType::Great;
             zWrite = false;
+            doubleSide=true;
         }
 
     public:
@@ -72,7 +74,7 @@ namespace ExRenderer::Testbench::Basic
         }
         Vector4 FragmentShader(const FragmentData &fragment) override
         {
-            return Vector4(1,0,0,1);
+            return Vector4(0.505,0.84,0.81,1);
         }
     };
 
@@ -116,7 +118,7 @@ namespace ExRenderer::Testbench::Basic
         CullShader cullShader;
 
         std::cout<<frameIndex<<std::endl;
-        renderer.Clear(Color(255, 255, 255, 255));
+        renderer.Clear(Color(200, 200, 200, 255));
         renderer.SetCameraParams(3.1415/2,0.5,10);
         renderer.SetCameraTransform(Vector3(0,0,-2),Vector3::zero());
         renderer.SetModelTransform(Vector3::zero(),Vector3(0,(float)frameIndex/100,(float)frameIndex/200));
@@ -136,14 +138,15 @@ namespace ExRenderer::Testbench::Basic
         // renderer.SetModelTransform(Vector3::zero(),Vector3::zero());
         
         // renderer.RenderTriangle(demoShader,v1,v2,v3);
-        renderer.SetModelTransform(Vector3(0,1,0.5),Vector3(0,(float)frameIndex/1000,0));
+        renderer.SetModelTransform(Vector3(0,0.6,0.5),Vector3(0,(float)frameIndex/100,0));
         VertexData v1,v2,v3;
         v1.position=Vector3(0,1,0);v1.color=Vector3(0,1,0);
         v2.position=Vector3(0,0,0);v2.color=Vector3(0,0,0);
         v3.position=Vector3(1,0,0);v3.color=Vector3(1,0,0);
         
         renderer.RenderTriangle(demoShader,v1,v2,v3);
-        renderer.RenderCoordinate();
+        renderer.RenderTriangle(cullShader,v1,v2,v3);
+        // renderer.RenderCoordinate();
         // renderer.RenderDepth();
     }
 
