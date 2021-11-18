@@ -6,6 +6,8 @@ namespace ExRenderer
     {
         m_frame=FrameBuffer(w,h);
         m_depth=DepthBuffer(w,h);
+        universalBuffer=nullptr;
+        universalBufferSize=0;
     }
 
     void ForwardPipelineRenderer::InitializeEnv(const char *title)
@@ -15,6 +17,8 @@ namespace ExRenderer
         sdlWindow = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, m_width, m_height, 0);
         sdlRenderer = SDL_CreateRenderer(sdlWindow, -1, SDL_RENDERER_ACCELERATED);
         sdlTexture = SDL_CreateTexture(sdlRenderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STREAMING, m_width, m_height);
+
+        jobScheduler.StartThreads();
     }
 
     bool ForwardPipelineRenderer::UpdateEnv()
@@ -32,6 +36,8 @@ namespace ExRenderer
     {
         SDL_DestroyRenderer(sdlRenderer);
         SDL_DestroyWindow(sdlWindow);
+
+        jobScheduler.StopThreads();
     }
 
     void ForwardPipelineRenderer::updateMvpMatrix()

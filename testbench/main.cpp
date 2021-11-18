@@ -15,9 +15,22 @@ struct DemoJob:public ExRenderer::JobData
 
 int main(int argc, char *args[])
 {
-    // Basic::Test();
+    Basic::Test();
     ExRenderer::JobScheduler jobScheduler;
-    for(int i=0;i<20;i++)
+    jobScheduler.StartThreads();
+    for(int i=0;i<200;i++)
+    {
+
+        auto a= new DemoJob(i);
+        a->Run();
+        // jobScheduler.PushJob(new DemoJob(i));
+    }
+    
+    std::cout<<"Start Jobs"<<std::endl;
+    jobScheduler.Schedule();
+    std::cout<<"Finish Jobs"<<std::endl;
+
+    for(int i=0;i<2;i++)
     {
         jobScheduler.PushJob(new DemoJob(i));
     }
@@ -25,6 +38,7 @@ int main(int argc, char *args[])
     std::cout<<"Start Jobs"<<std::endl;
     jobScheduler.Schedule();
     std::cout<<"Finish Jobs"<<std::endl;
+
     while (true)
     {
         /* code */

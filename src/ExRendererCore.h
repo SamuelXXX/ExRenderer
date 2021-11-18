@@ -8,6 +8,7 @@
 #include <SDL2/SDL.h>
 #include "ExShader.h"
 #include "ExUtils.h"
+#include "ExJobScheduler.h"
 
 namespace ExRenderer
 {
@@ -24,6 +25,10 @@ namespace ExRenderer
         SDL_Texture *sdlTexture;
         SDL_Window *sdlWindow;
         SDL_Renderer *sdlRenderer;
+        JobScheduler jobScheduler;
+
+        void *universalBuffer;
+        size_t universalBufferSize;
 
         uint32_t m_width, m_height;
         FrameBuffer m_frame;
@@ -34,6 +39,21 @@ namespace ExRenderer
         Matrix4x4 mvpMatrix;
 
         void updateMvpMatrix();
+    public:
+        void* RequireUniversalBuffer(size_t size)
+        {
+            if(size>universalBufferSize)
+            {
+                if(universalBuffer!=nullptr)
+                {
+                    std::free(universalBuffer);
+                }
+                std::cout<<"malloc"<<std::endl;
+                universalBuffer=std::malloc(size);
+                universalBufferSize=size;
+            }
+            return universalBuffer;
+        }
 
     public:
         ForwardPipelineRenderer() = default;
@@ -57,6 +77,57 @@ namespace ExRenderer
         void RenderDepth();
         void RenderCoordinate();
 
+        template <class VT,class FT>
+        void RenderFragment(Shader<VT,FT> &shader,const Matrix3x3 &mulMatrix, int32_t x,int32_t y, FT &f1,FT &f2,FT &f3)
+        {
+            Vector3 weight = mulMatrix * Vector3(x, y, 1);
+            if (weight.x >= -0.001 && weight.y >= -0.001 && weight.z >= -0.001)
+            {
+                FT rf = f1 * weight.x + f2 * weight.y + f3 * weight.z;
+                if (rf.position.z < -1 || rf.position.z > 1)
+                    return;
+                float d = m_depth.TestDepth(x, y, rf.position.z);
+                bool zTestPassed = false;
+                switch (shader.zTest)
+                {
+                case ZTestType::Always:
+                    zTestPassed = true;
+                    break;
+                case ZTestType::Less:
+                    zTestPassed = (d < 0);
+                    break;
+                case ZTestType::LessEqual:
+                    zTestPassed = (d <= 0);
+                    break;
+                case ZTestType::Equal:
+                    zTestPassed = (d == 0);
+                    break;
+                case ZTestType::GreatEqual:
+                    zTestPassed = (d >= 0);
+                    break;
+                case ZTestType::Great:
+                    zTestPassed = (d > 0);
+                    break;
+                case ZTestType::NotEqual:
+                    zTestPassed = (d != 0);
+                    break;
+                }
+                if (!zTestPassed)
+                {
+                    return;
+                }
+
+                Vector4 color = shader.FragmentShader(rf);
+                Color trueColor = Utils::ConvertColor(color);
+
+                m_frame.SetPixel(x, y, trueColor);
+                if (zTestPassed && shader.zWrite)
+                {
+                    m_depth.SetDepth(x, y, rf.position.z);
+                }
+            }
+        }
+
         template <class VT>
         void DrawWireMesh(Mesh<VT> &, const Color &);
         template <class VT, class FT>
@@ -66,6 +137,65 @@ namespace ExRenderer
         template <class VT, class FT>
         void RenderMesh(Mesh<VT> &, Shader<VT, FT> &);
     };
+    template<class VT,class FT>
+    struct FragmentRenderJobData:public JobData
+    {
+        static ForwardPipelineRenderer *renderer;
+        static Shader<VT,FT> *shaderPtr;
+        static Matrix3x3 *mulMatrixPtr;
+        static FT *f1Ptr;
+        static FT *f2Ptr;
+        static FT *f3Ptr;
+        static uint32_t xMin;
+        static uint32_t xMax;
+        static uint32_t yMin;
+        static uint32_t yMax;
+
+        uint32_t startIndex;
+        uint32_t endIndex;
+
+        FragmentRenderJobData(uint32_t startIndex,uint32_t endIndex):startIndex(startIndex),endIndex(endIndex)
+        {
+
+        }
+
+        void Run() override
+        {
+            int rowLength=xMax-xMin+1;
+            int length=(xMax-xMin+1)*(yMax-yMin+1);
+            for(int i=startIndex;i<endIndex&&i<length;++i)
+            {
+                int row=i/rowLength;
+                int col=i%rowLength;
+                int x=col+xMin;
+                int y=row+yMin;
+                renderer->RenderFragment(*shaderPtr,*mulMatrixPtr,x,y,*f1Ptr,*f2Ptr,*f3Ptr);
+            }
+            
+        }
+    };
+
+    template<class VT,class FT>
+    ForwardPipelineRenderer *FragmentRenderJobData<VT,FT>::renderer=nullptr;
+    template<class VT,class FT>
+    Shader<VT,FT> *FragmentRenderJobData<VT,FT>::shaderPtr=nullptr;
+    template<class VT,class FT>
+    Matrix3x3 *FragmentRenderJobData<VT,FT>::mulMatrixPtr=nullptr;
+    template<class VT,class FT>
+    FT *FragmentRenderJobData<VT,FT>::f1Ptr=nullptr;
+    template<class VT,class FT>
+    FT *FragmentRenderJobData<VT,FT>::f2Ptr=nullptr;
+    template<class VT,class FT>
+    FT *FragmentRenderJobData<VT,FT>::f3Ptr=nullptr;
+    template<class VT,class FT>
+    uint32_t FragmentRenderJobData<VT,FT>::xMin=0;
+    template<class VT,class FT>
+    uint32_t FragmentRenderJobData<VT,FT>::xMax=0;
+    template<class VT,class FT>
+    uint32_t FragmentRenderJobData<VT,FT>::yMin=0;
+    template<class VT,class FT>
+    uint32_t FragmentRenderJobData<VT,FT>::yMax=0;
+
 
     template <class VT>
     void ForwardPipelineRenderer::DrawWireMesh(Mesh<VT> &mesh, const Color &color)
@@ -110,59 +240,31 @@ namespace ExRenderer
                             Vector3(sp2.x, sp2.y, 1),
                             Vector3(sp3.x, sp3.y, 1));
         mulMatrix = mulMatrix.Inverse();
+        
+        size_t requireSize=m_width*m_height*sizeof(FragmentRenderJobData<VT,FT>);
+        
+        FragmentRenderJobData<VT,FT> *allData=(FragmentRenderJobData<VT,FT> *)RequireUniversalBuffer(requireSize);
+        FragmentRenderJobData<VT,FT>::renderer=this;
+        FragmentRenderJobData<VT,FT>::shaderPtr=&shader;
+        FragmentRenderJobData<VT,FT>::mulMatrixPtr=&mulMatrix;
+        FragmentRenderJobData<VT,FT>::f1Ptr=&f1;
+        FragmentRenderJobData<VT,FT>::f2Ptr=&f2;
+        FragmentRenderJobData<VT,FT>::f3Ptr=&f3;
+        FragmentRenderJobData<VT,FT>::xMin=min_sx;
+        FragmentRenderJobData<VT,FT>::xMax=max_sx;
+        FragmentRenderJobData<VT,FT>::yMin=min_sy;
+        FragmentRenderJobData<VT,FT>::yMax=max_sy;
 
-        for (int32_t y = min_sy; y <= max_sy; ++y)
+        uint32_t length=(max_sy-min_sy+1)*(max_sx-min_sx+1);
+        
+        int dataIndex=0;
+        for(int i=0;i<length;i+=300)
         {
-            for (int32_t x = min_sx; x <= max_sx; ++x)
-            {
-                Vector3 weight = mulMatrix * Vector3(x, y, 1);
-                if (weight.x >= -0.001 && weight.y >= -0.001 && weight.z >= -0.001)
-                {
-                    FT rf = f1 * weight.x + f2 * weight.y + f3 * weight.z;
-                    if (rf.position.z < -1 || rf.position.z > 1)
-                        continue;
-                    float d = m_depth.TestDepth(x, y, rf.position.z);
-                    bool zTestPassed = false;
-                    switch (shader.zTest)
-                    {
-                    case ZTestType::Always:
-                        zTestPassed = true;
-                        break;
-                    case ZTestType::Less:
-                        zTestPassed = (d < 0);
-                        break;
-                    case ZTestType::LessEqual:
-                        zTestPassed = (d <= 0);
-                        break;
-                    case ZTestType::Equal:
-                        zTestPassed = (d == 0);
-                        break;
-                    case ZTestType::GreatEqual:
-                        zTestPassed = (d >= 0);
-                        break;
-                    case ZTestType::Great:
-                        zTestPassed = (d > 0);
-                        break;
-                    case ZTestType::NotEqual:
-                        zTestPassed = (d != 0);
-                        break;
-                    }
-                    if (!zTestPassed)
-                    {
-                        continue;
-                    }
-
-                    Vector4 color = shader.FragmentShader(rf);
-                    Color trueColor = Utils::ConvertColor(color);
-
-                    m_frame.SetPixel(x, y, trueColor);
-                    if (zTestPassed && shader.zWrite)
-                    {
-                        m_depth.SetDepth(x, y, rf.position.z);
-                    }
-                }
-            }
+            FragmentRenderJobData<VT,FT> *data=new (allData+dataIndex++) FragmentRenderJobData<VT,FT>(i,i+300);
+            jobScheduler.PushJob(data);
         }
+
+        jobScheduler.Schedule();
     }
 
     template <class VT, class FT>

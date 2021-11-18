@@ -11,45 +11,38 @@ namespace ExRenderer
     void JobThread::Stop()
     {
         running=false;
+        mThread.detach();
     }
 
+    #pragma GCC optimize(2)
     void JobThread::DoJob()
     {
         while (running)
         {
             if(jobData!=nullptr)
             {
+                //lock.lock();
                 jobData->Run();
-                delete jobData;
                 jobData=nullptr;
+                //lock.unlock();
             }
         }
         
     }
 
-    void JobScheduler::PushJob(JobData *data)
-    {
-        m_jobs.push_back(data);
-    }
-
+    #pragma GCC optimize(2)
     void JobScheduler::Schedule()
     {
-        for(int i=0;i<MAX_THREADS;++i)
-        {
-            jobThreads[i].jobData=nullptr;
-            jobThreads[i].running=false;
-            jobThreads[i].Start();
-        }
-
-        while (m_jobs.size()!=0)
+        while (jobSize!=0)
         {
             for(int i=0;i<MAX_THREADS;++i)
             {
-                if(jobThreads[i].jobData==nullptr&&m_jobs.size()!=0)
+                //jobThreads[i].lock.lock();
+                if(jobThreads[i].jobData==nullptr&&jobSize!=0)
                 {
-                    jobThreads[i].jobData=m_jobs[m_jobs.size()-1];
-                    m_jobs.pop_back();
+                    jobThreads[i].jobData=PopJob();
                 }
+                //jobThreads[i].lock.unlock();
             }
         }
 
@@ -64,15 +57,7 @@ namespace ExRenderer
                     ++active;
                 }
             }
-        }
-
-        for(int i=0;i<MAX_THREADS;++i)
-        {
-            jobThreads[i].jobData=nullptr;
-            jobThreads[i].running=false;
-            jobThreads[i].Stop();
-        }
-        
+        }        
         
     }
 }
