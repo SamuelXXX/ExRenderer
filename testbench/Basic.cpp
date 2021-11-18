@@ -169,7 +169,7 @@ namespace ExRenderer::Testbench::Basic
     void Test()
     {
         MathTestBench();
-        ForwardPipelineRenderer fRenderer = ForwardPipelineRenderer(800, 600);
+        ForwardPipelineRenderer fRenderer = ForwardPipelineRenderer(1920, 1080);
         fRenderer.InitializeEnv("Demo");
         uint32_t frameIndex = 0;
         clock_t lastTime=clock();
