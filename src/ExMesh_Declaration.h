@@ -23,6 +23,10 @@ namespace ExRenderer
         uint32_t m_verticeSize;
         uint32_t *m_indexBuffer;
         uint32_t m_indexSize;
+    public:
+        const VT *GetVerticeBuffer(){return m_verticeBuffer;}
+        uint32_t VertexCount(){return m_verticeSize;}
+        uint32_t TriangleCount(){return m_indexSize;}
 
     public:
         Mesh<VT>() = default;
@@ -53,6 +57,9 @@ namespace ExRenderer
         VT *vertex1;
         VT *vertex2;
         VT *vertex3;
+        uint32_t index1;
+        uint32_t index2;
+        uint32_t index3;
         MeshIterator<VT>(Mesh<VT> *mesh, uint32_t index);
         MeshIterator<VT> &operator*();
         MeshIterator<VT> &operator++();

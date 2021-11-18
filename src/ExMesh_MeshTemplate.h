@@ -86,15 +86,16 @@ namespace ExRenderer
         if (m_index < 0 || m_index >= m_mesh->m_indexSize)
         {
             vertex1 = vertex2 = vertex3 = nullptr;
+            index1=index2=index3=0;
         }
         else
         {
-            int firstIndex = m_mesh->m_indexBuffer[3 * m_index];
-            int secondIndex = m_mesh->m_indexBuffer[3 * m_index + 1];
-            int thirdIndex = m_mesh->m_indexBuffer[3 * m_index + 2];
-            vertex1 = &(m_mesh->m_verticeBuffer[firstIndex]);
-            vertex2 = &(m_mesh->m_verticeBuffer[secondIndex]);
-            vertex3 = &(m_mesh->m_verticeBuffer[thirdIndex]);
+            index1 = m_mesh->m_indexBuffer[3 * m_index];
+            index2 = m_mesh->m_indexBuffer[3 * m_index + 1];
+            index3 = m_mesh->m_indexBuffer[3 * m_index + 2];
+            vertex1 = &(m_mesh->m_verticeBuffer[index1]);
+            vertex2 = &(m_mesh->m_verticeBuffer[index2]);
+            vertex3 = &(m_mesh->m_verticeBuffer[index3]);
         }
     }
 
