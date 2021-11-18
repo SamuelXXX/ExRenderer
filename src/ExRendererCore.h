@@ -93,10 +93,10 @@ namespace ExRenderer
         sp3 = NormalToScreen(f3.position);
 
         int32_t min_sx, max_sx, min_sy, max_sy;
-        min_sx = Utils::Min(sp1.x, sp2.x, sp3.x);
-        max_sx = Utils::Max(sp1.x, sp2.x, sp3.x);
-        min_sy = Utils::Min(sp1.y, sp2.y, sp3.y);
-        max_sy = Utils::Max(sp1.y, sp2.y, sp3.y);
+        min_sx = Utils::Min(sp1.x-1, sp2.x-1, sp3.x-1);
+        max_sx = Utils::Max(sp1.x+1, sp2.x+1, sp3.x+1);
+        min_sy = Utils::Min(sp1.y-1, sp2.y-1, sp3.y-1);
+        max_sy = Utils::Max(sp1.y+1, sp2.y+1, sp3.y+1);
         min_sx = Utils::Clamp(min_sx, 0, m_width);
         max_sx = Utils::Clamp(max_sx, 0, m_width);
         min_sy = Utils::Clamp(min_sy, 0, m_height);
@@ -112,7 +112,7 @@ namespace ExRenderer
             for (int32_t x = min_sx; x <= max_sx; ++x)
             {
                 Vector3 weight = mulMatrix * Vector3(x, y, 1);
-                if (weight.x > 0 && weight.y > 0 && weight.z > 0)
+                if (weight.x >= -0.001 && weight.y >= -0.001 && weight.z >= -0.001)
                 {
                     FT rf = f1 * weight.x + f2 * weight.y + f3 * weight.z;
                     if(rf.position.z<-1||rf.position.z>1)
