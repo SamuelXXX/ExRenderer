@@ -1,4 +1,5 @@
 #include"ExRendererTestbench.h"
+#include<time.h>
 
 namespace ExRenderer::Testbench::Basic
 {
@@ -110,40 +111,37 @@ namespace ExRenderer::Testbench::Basic
         }
     };
 
-    void UpdateRenderer(ForwardPipelineRenderer &renderer, int frameIndex)
+    void UpdateRenderer(ForwardPipelineRenderer &renderer, float deltaTime)
     {
+        static DemoShader demoShader;
+        static PureColorShader psShader;
+        static CullShader cullShader;
         static Mesh<VertexData> cubeMesh=MeshBuilder<VertexData>::Cube();
-        DemoShader demoShader;
-        PureColorShader psShader;
-        CullShader cullShader;
-
-        std::cout<<frameIndex<<std::endl;
-        renderer.Clear(Color(200, 200, 200, 255));
-        renderer.SetCameraParams(3.1415/2,0.5,10);
-        renderer.SetCameraTransform(Vector3(0,0,-2),Vector3::zero());
-        renderer.SetModelTransform(Vector3::zero(),Vector3(0,(float)frameIndex/100,(float)frameIndex/200));
-        
-        psShader.SetColor(Vector4(0,1,0,1));
-        // renderer.RenderMesh(cubeMesh,psShader);
-        // renderer.DrawWireMesh(cubeMesh, Color(255, 0, 0, 255));
-        // renderer.DrawLine(Vector3(0,0,0),Vector3(0,0,0),Color(255,0,0,255));
-
-        // renderer.SetModelTransform(Vector3(1,1,10),Vector3(0,(float)frameIndex/1000,0));
-        psShader.SetColor(Vector4(1,0,0,1));
-        renderer.RenderMesh(cubeMesh,psShader);
-
-
-        
-        
-        // renderer.SetModelTransform(Vector3::zero(),Vector3::zero());
-        
-        // renderer.RenderTriangle(demoShader,v1,v2,v3);
-        renderer.SetModelTransform(Vector3(0,0.6,0.5),Vector3(0,(float)frameIndex/100,0));
-        VertexData v1,v2,v3;
+        static Vector3 rotation1(0,0,0),rotation2(0,0,0),rotation3(0,0,0);
+        static Vector3 position1(0,0,0),position2(1,1,2),position3(0,0.6,0.5);
+        static VertexData v1,v2,v3;
         v1.position=Vector3(0,1,0);v1.color=Vector3(0,1,0);
         v2.position=Vector3(0,0,0);v2.color=Vector3(0,0,0);
         v3.position=Vector3(1,0,0);v3.color=Vector3(1,0,0);
         
+
+        renderer.Clear(Color(200, 200, 200, 255));
+        renderer.SetCameraParams(3.1415/2,0.5,10);
+        renderer.SetCameraTransform(Vector3(0,0,-2),Vector3::zero());
+
+        rotation1=rotation1+Vector3(0,deltaTime,deltaTime);
+        rotation2=rotation2+Vector3(0,deltaTime,0);
+        rotation3=rotation3+Vector3(0,deltaTime,0);
+
+        position1=position1+Vector3(deltaTime*0.1,0,0);
+
+        renderer.SetModelTransform(position1,rotation1); // Cube1
+        renderer.RenderMesh(cubeMesh,psShader);
+
+        renderer.SetModelTransform(position2,rotation2); // Cube2
+        renderer.RenderMesh(cubeMesh,psShader);
+
+        renderer.SetModelTransform(position3,rotation3); // Colorful Triangle
         renderer.RenderTriangle(demoShader,v1,v2,v3);
         renderer.RenderTriangle(cullShader,v1,v2,v3);
         // renderer.RenderCoordinate();
@@ -156,9 +154,30 @@ namespace ExRenderer::Testbench::Basic
         ForwardPipelineRenderer fRenderer = ForwardPipelineRenderer(800, 600);
         fRenderer.InitializeEnv("Demo");
         uint32_t frameIndex = 0;
+        clock_t lastTime=clock();
+        uint32_t lastFrame=0;
+
+        float deltaTime=0;
+        clock_t lastTickTime=clock();
+        
         while (true)
         {
-            UpdateRenderer(fRenderer, frameIndex++);
+            deltaTime=(float)(clock()-lastTickTime)/CLOCKS_PER_SEC;
+            lastTickTime=clock();
+            UpdateRenderer(fRenderer, deltaTime);
+            frameIndex++;
+
+            clock_t curTime=clock();
+            if(curTime-lastTime>CLOCKS_PER_SEC)
+            {
+                uint32_t framePassed=frameIndex-lastFrame;
+                float fps=(float)(framePassed)/(curTime-lastTime)*CLOCKS_PER_SEC;
+
+                std::cout<<"FPS:"<<framePassed<<std::endl;
+                lastTime=curTime;
+                lastFrame=frameIndex;
+            }
+
             if(fRenderer.UpdateEnv())
                 break;
         }
