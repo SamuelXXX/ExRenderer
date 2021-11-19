@@ -55,6 +55,7 @@ namespace ExRenderer
 
     public:
         void Clear(const Color &);
+        void ClearRow(const Color &,int32_t);
         void DrawLineNormalize(const Vector3 &, const Vector3 &, const Color &);
         void DrawLine(const Vector3 &, const Vector3 &, const Color &);
         void RenderDepth();

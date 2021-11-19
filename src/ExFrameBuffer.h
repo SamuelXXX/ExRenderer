@@ -48,6 +48,7 @@ namespace ExRenderer
         void DrawCircle(uint32_t,uint32_t,uint32_t,const Color &);
         void DrawFilledCircle(uint32_t,uint32_t,uint32_t,const Color &);
         void Clear(const Color&);
+        void ClearRow(const Color&,int32_t);
     };
 }
 

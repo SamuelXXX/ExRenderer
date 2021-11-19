@@ -2,6 +2,21 @@
 
 namespace ExRenderer
 {
+    struct ClearScreenJob:public JobData
+    {
+        static ForwardPipelineRenderer *renderer;
+        static Color color;
+        int rowIndex;
+        ClearScreenJob(int rowIndex):rowIndex(rowIndex){}
+
+        void Run() override
+        {
+            renderer->ClearRow(color,rowIndex);
+        }
+    };
+    ForwardPipelineRenderer *ClearScreenJob::renderer=nullptr;
+    Color ClearScreenJob::color(0,0,0,0);
+
     ForwardPipelineRenderer::ForwardPipelineRenderer(uint32_t w, uint32_t h):m_width(w),m_height(h)
     {
         m_frame=FrameBuffer(w,h);
@@ -78,8 +93,31 @@ namespace ExRenderer
 
     void ForwardPipelineRenderer::Clear(const Color &color)
     {
-        m_frame.Clear(color);
-        m_depth.Clear();
+        if(!enableRenderBoost)
+        {
+            m_frame.Clear(color);
+            m_depth.Clear();
+        }
+        else
+        {
+            ClearScreenJob::renderer=this;
+            ClearScreenJob::color=color;
+
+            jobScheduler.PrepareScheduler(m_height*sizeof(ClearScreenJob));
+            for(int i=0;i<m_height;++i)
+            {
+                jobScheduler.PushJob<ClearScreenJob>(i);
+            }
+
+            jobScheduler.Schedule();
+        }
+        
+    }
+
+    void ForwardPipelineRenderer::ClearRow(const Color &color,int32_t row)
+    {
+        m_frame.ClearRow(color,row);
+        m_depth.ClearRow(row);
     }
 
     void ForwardPipelineRenderer::DrawLineNormalize(const Vector3 &p1,const Vector3 &p2, const Color &color)

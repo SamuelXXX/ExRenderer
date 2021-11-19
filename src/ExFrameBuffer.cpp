@@ -200,4 +200,16 @@ namespace ExRenderer
             m_buffer[i+3]=color.a;
         }
     }
+
+    void FrameBuffer::ClearRow(const Color& color,int32_t row)
+    {
+        int32_t rowBase=row*m_width*4;
+        for(uint32_t i=0;i<m_width*4;i+=4)
+        {
+            m_buffer[rowBase+i]=color.b;
+            m_buffer[rowBase+i+1]=color.g;
+            m_buffer[rowBase+i+2]=color.r;
+            m_buffer[rowBase+i+3]=color.a;
+        }
+    }
 }
