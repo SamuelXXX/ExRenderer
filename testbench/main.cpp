@@ -16,30 +16,30 @@ struct DemoJob:public ExRenderer::JobData
 int main(int argc, char *args[])
 {
     Basic::Test();
-    ExRenderer::JobScheduler jobScheduler;
-    jobScheduler.StartThreads();
-    for(int i=0;i<2;i++)
-    {
-        jobScheduler.PushJob(new DemoJob(i));
-    }
+    // ExRenderer::JobScheduler jobScheduler;
+    // jobScheduler.StartThreads();
+    // for(int i=0;i<2;i++)
+    // {
+    //     jobScheduler.PushJob(new DemoJob(i));
+    // }
     
-    std::cout<<"Start Jobs"<<std::endl;
-    jobScheduler.Schedule();
-    std::cout<<"Finish Jobs"<<std::endl;
+    // std::cout<<"Start Jobs"<<std::endl;
+    // jobScheduler.Schedule();
+    // std::cout<<"Finish Jobs"<<std::endl;
 
-    for(int i=0;i<2;i++)
-    {
-        jobScheduler.PushJob(new DemoJob(i));
-    }
+    // for(int i=0;i<2;i++)
+    // {
+    //     jobScheduler.PushJob(new DemoJob(i));
+    // }
     
-    std::cout<<"Start Jobs"<<std::endl;
-    jobScheduler.Schedule();
-    std::cout<<"Finish Jobs"<<std::endl;
+    // std::cout<<"Start Jobs"<<std::endl;
+    // jobScheduler.Schedule();
+    // std::cout<<"Finish Jobs"<<std::endl;
 
-    while (true)
-    {
-        /* code */
-    }
+    // while (true)
+    // {
+    //     /* code */
+    // }
     
     return 0;
 }

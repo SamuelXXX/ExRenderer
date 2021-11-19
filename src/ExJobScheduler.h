@@ -39,9 +39,45 @@ namespace ExRenderer
 
         JobThread jobThreads[MAX_THREADS];
 
+        void *universalBuffer;
+        size_t universalBufferSize;
+        size_t bufferPtr;
+        void* requireUniversalBuffer(size_t size)
+        {
+            if(size>universalBufferSize)
+            {
+                if(universalBuffer!=nullptr)
+                {
+                    std::free(universalBuffer);
+                }
+                // std::cout<<"malloc:"<<size<<std::endl;
+                universalBuffer=std::malloc(size);
+                universalBufferSize=size;
+            }
+            return universalBuffer;
+        }
+
+    public:
+        
+
+        void PrepareScheduler(size_t size)
+        {
+            requireUniversalBuffer(size);
+
+            bufferPtr=0;
+        }
+
+        void *GetAllocatedData(size_t size)
+        {
+            void * retPtr=(uint8_t *)universalBuffer+bufferPtr;
+            bufferPtr+=size;
+            return retPtr;
+        }
+
     public:
         JobScheduler()
         {
+            
         }
 
     public:
@@ -55,6 +91,9 @@ namespace ExRenderer
                 jobThreads[i].running = false;
                 jobThreads[i].Start();
             }
+
+            universalBuffer=nullptr;
+            universalBufferSize=0;
         }
 
         void StopThreads()
@@ -65,6 +104,10 @@ namespace ExRenderer
                 jobThreads[i].jobData = nullptr;
                 jobThreads[i].running = false;
                 jobThreads[i].Stop();
+            }
+            if(universalBuffer!=nullptr)
+            {
+                std::free(universalBuffer);
             }
         }
         void PushJob(JobData *data)

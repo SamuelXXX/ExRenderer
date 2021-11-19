@@ -6,8 +6,6 @@ namespace ExRenderer
     {
         m_frame=FrameBuffer(w,h);
         m_depth=DepthBuffer(w,h);
-        universalBuffer=nullptr;
-        universalBufferSize=0;
     }
 
     void ForwardPipelineRenderer::InitializeEnv(const char *title)

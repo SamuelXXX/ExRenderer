@@ -27,9 +27,6 @@ namespace ExRenderer
         SDL_Renderer *sdlRenderer;
         JobScheduler jobScheduler;
 
-        void *universalBuffer;
-        size_t universalBufferSize;
-
         uint32_t m_width, m_height;
         FrameBuffer m_frame;
         DepthBuffer m_depth;
@@ -39,21 +36,6 @@ namespace ExRenderer
         Matrix4x4 mvpMatrix;
 
         void updateMvpMatrix();
-    public:
-        void* RequireUniversalBuffer(size_t size)
-        {
-            if(size>universalBufferSize)
-            {
-                if(universalBuffer!=nullptr)
-                {
-                    std::free(universalBuffer);
-                }
-                std::cout<<"malloc"<<std::endl;
-                universalBuffer=std::malloc(size);
-                universalBufferSize=size;
-            }
-            return universalBuffer;
-        }
 
     public:
         ForwardPipelineRenderer() = default;
@@ -241,9 +223,8 @@ namespace ExRenderer
                             Vector3(sp3.x, sp3.y, 1));
         mulMatrix = mulMatrix.Inverse();
         
-        size_t requireSize=m_width*m_height*sizeof(FragmentRenderJobData<VT,FT>);
         
-        FragmentRenderJobData<VT,FT> *allData=(FragmentRenderJobData<VT,FT> *)RequireUniversalBuffer(requireSize);
+    
         FragmentRenderJobData<VT,FT>::renderer=this;
         FragmentRenderJobData<VT,FT>::shaderPtr=&shader;
         FragmentRenderJobData<VT,FT>::mulMatrixPtr=&mulMatrix;
@@ -256,17 +237,19 @@ namespace ExRenderer
         FragmentRenderJobData<VT,FT>::yMax=max_sy;
 
         uint32_t length=(max_sy-min_sy+1)*(max_sx-min_sx+1);
+        size_t requireSize=length*sizeof(FragmentRenderJobData<VT,FT>);
+        jobScheduler.PrepareScheduler(requireSize);
         
-        int dataIndex=0;
         int segCount=length/MAX_THREADS+1;
         for(int i=0;i<length;i+=segCount)
         {
-            FragmentRenderJobData<VT,FT> *data=new (allData+dataIndex++) FragmentRenderJobData<VT,FT>(i,i+segCount);
-            data->Run();
-            // jobScheduler.PushJob(data);
+            FragmentRenderJobData<VT,FT> *rawPtr=(FragmentRenderJobData<VT,FT> *)jobScheduler.GetAllocatedData(sizeof(FragmentRenderJobData<VT,FT>));
+            FragmentRenderJobData<VT,FT> *data=new (rawPtr) FragmentRenderJobData<VT,FT>(i,i+segCount);
+            //data->Run();
+            jobScheduler.PushJob(data);
         }
 
-        // jobScheduler.Schedule();
+        jobScheduler.Schedule();
     }
 
     template <class VT, class FT>
