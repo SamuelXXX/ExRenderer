@@ -42,6 +42,7 @@ namespace ExRenderer
         ForwardPipelineRenderer(uint32_t, uint32_t);
 
     public:
+        bool enableRenderBoost;
         void InitializeEnv(const char *);
         bool UpdateEnv();
         void FinalizeEnv();
@@ -244,9 +245,14 @@ namespace ExRenderer
         for(int i=0;i<length;i+=segCount)
         {
             FragRenderJob<VT,FT> *job=jobScheduler.MakeJob<FragRenderJob<VT,FT>>(i,i+segCount);
-            // job->Run();
-            jobScheduler.PushJob(job);
-            // jobScheduler.PushJob<FragRenderJob<VT,FT>>(i,i+segCount);
+            if(!enableRenderBoost)
+            {
+                job->Run();
+            }
+            else
+            {
+                jobScheduler.PushJob(job);
+            }
         }
 
         jobScheduler.Schedule();
