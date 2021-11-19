@@ -246,7 +246,7 @@ namespace ExRenderer
         for(int i=0;i<length;i+=segCount)
         {
             FragRenderJob<VT,FT> *job=jobScheduler.MakeJob<FragRenderJob<VT,FT>>(i,i+segCount);
-            if(!enableRenderBoost)
+            if(!enableRenderBoost||segCount<100)
             {
                 job->Run();
             }

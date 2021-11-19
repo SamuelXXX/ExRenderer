@@ -67,7 +67,7 @@ namespace ExRenderer::Testbench::Diffuse
         }
         Vector4 FragmentShader(const FragmentData &fragment) override
         {
-            Vector3 normal=-fragment.normal;
+            Vector3 normal=-fragment.normal.Normalize();
             // normal=normal.Normalize();
             number_t diffuse=normal*worldLightDir;
             if(diffuse<0)
@@ -93,16 +93,17 @@ namespace ExRenderer::Testbench::Diffuse
         diffShader.SetLight(Vector3(1,-1,3),Vector4(1,1,1,1));
         diffShader.SetBaseColor(Vector4(0.3,0.7,0.2,1));
 
-        renderer.Clear(Color(200, 200, 200, 255));
+        renderer.Clear(Color(0, 0, 0, 255));
         renderer.SetCameraParams(3.1415/2,0.5,10);
         renderer.SetCameraTransform(Vector3(0,0,-2),Vector3::zero());
 
-        rotation1=rotation1+Vector3(0,deltaTime,deltaTime);
+        rotation1=rotation1+Vector3(0,deltaTime,deltaTime*2);
 
         // position1=position1+Vector3(deltaTime*0.1,0,0);
 
         renderer.SetModelTransform(position1,rotation1); // Cube1
         renderer.RenderMesh(sphereMesh,diffShader);
+        // renderer.DrawWireMesh(sphereMesh,Color(255,0,0,255));
 
         // renderer.RenderCoordinate();
         // renderer.RenderDepth();
@@ -113,6 +114,7 @@ namespace ExRenderer::Testbench::Diffuse
         MathTestBench();
         ForwardPipelineRenderer fRenderer = ForwardPipelineRenderer(1920, 1080);
         fRenderer.InitializeEnv("Demo");
+        // fRenderer.enableRenderBoost=false;
         uint32_t frameIndex = 0;
         clock_t lastTime=clock();
         uint32_t lastFrame=0;

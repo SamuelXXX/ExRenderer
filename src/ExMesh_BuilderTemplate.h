@@ -88,25 +88,29 @@ namespace ExRenderer
     {
         MeshBuilder mBuilder;
 
-        int poly=32;
+        int poly=64;
+        int hPoly=poly/2;
+        float PI=3.1415926;
 
-        for(int i=1;i<poly;i++)
+        for(int i=1;i<hPoly;i++)
         {
-            float y=(float)i/poly-0.5;
+            float angle=i*PI/hPoly;
+            float y=-0.5*cos(angle);
+            // y=0;
             float r=sqrtf(0.25-y*y);
             for(int j=0;j<poly;j++)
             {
-                float angle=3.14*2*j/poly;
+                float angle=PI*2*j/poly;
                 float x=cos(angle)*r;
                 float z=sin(angle)*r;
                 VT v;
                 v.position=Vector3(x,y,z);
-                v.normal=v.position;
+                v.normal=v.position*2;
                 mBuilder.AddVertex(v);
             }
         }
 
-        for(int j=0;j<poly-2;j++)
+        for(int j=0;j<hPoly-2;j++)
         {
             int base=j*poly;
             for(int i=0;i<poly-1;i++)
@@ -115,6 +119,31 @@ namespace ExRenderer
             }
             mBuilder.AddQuad(base+poly-1,base,base+poly,base+poly*2-1);
         }
+
+        VT vBottom;
+        vBottom.position=Vector3(0,-0.5,0);
+        vBottom.normal=vBottom.position*2;
+        mBuilder.AddVertex(vBottom);
+        VT vUp;
+        vUp.position=Vector3(0,0.5,0);
+        vUp.normal=vUp.position*2;
+        mBuilder.AddVertex(vUp);
+
+        int vupIndex=mBuilder.vertices.size()-1;
+        int vbottomIndex=vupIndex-1;
+        for(int i=0;i<poly-1;i++)
+        {
+            mBuilder.AddTriangle(vbottomIndex,i+1,i);
+        }
+        mBuilder.AddTriangle(vbottomIndex,0,poly-1);
+
+        int base=vupIndex-poly-1;
+        for(int i=0;i<poly-1;i++)
+        {
+            mBuilder.AddTriangle(vupIndex,base+i,base+i+1);
+        }
+        mBuilder.AddTriangle(vupIndex,base+poly-1,base);
+
         
 
           
