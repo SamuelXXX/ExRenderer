@@ -67,6 +67,7 @@
         "list": "cpp",
         "unordered_map": "cpp",
         "xhash": "cpp",
-        "random": "cpp"
+        "random": "cpp",
+        "condition_variable": "cpp"
     }
 }

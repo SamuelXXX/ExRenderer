@@ -16,15 +16,23 @@ namespace ExRenderer
         virtual void Run()=0;
     };
 
+
+
     struct JobThread
     {
+        int index;
         std::thread mThread;
         JobData *jobData;
         bool running;
+        
 
         void Start();
         void Stop();
         void DoJob();
+
+        void Wait();
+        void Notify();
+
     };
 
     class JobScheduler
@@ -46,6 +54,7 @@ namespace ExRenderer
             std::cout<<"Init JobScheduler"<<std::endl;
             for(int i=0;i<MAX_THREADS;++i)
             {
+                jobThreads[i].index=i;
                 jobThreads[i].jobData=nullptr;
                 jobThreads[i].running=false;
                 jobThreads[i].Start();
@@ -75,6 +84,7 @@ namespace ExRenderer
             return m_jobs[--jobSize];
         }
         void Schedule();
+        void NotifyAll();
     };
 }
 

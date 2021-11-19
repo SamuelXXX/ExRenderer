@@ -18,12 +18,9 @@ int main(int argc, char *args[])
     Basic::Test();
     ExRenderer::JobScheduler jobScheduler;
     jobScheduler.StartThreads();
-    for(int i=0;i<200;i++)
+    for(int i=0;i<2;i++)
     {
-
-        auto a= new DemoJob(i);
-        a->Run();
-        // jobScheduler.PushJob(new DemoJob(i));
+        jobScheduler.PushJob(new DemoJob(i));
     }
     
     std::cout<<"Start Jobs"<<std::endl;
