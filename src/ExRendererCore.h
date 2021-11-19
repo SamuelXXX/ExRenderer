@@ -14,10 +14,15 @@ namespace ExRenderer
 {
     struct ScreenPosition
     {
-        int32_t x;
-        int32_t y;
+        number_t x;
+        number_t y;
         ScreenPosition() = default;
-        ScreenPosition(int32_t x, int32_t y) : x(x), y(y) {}
+        ScreenPosition(number_t x, number_t y) : x(x), y(y) {}
+
+        bool operator==(const ScreenPosition&other)
+        {
+            return x==other.x&&y==other.y;
+        }
     };
 
     class ForwardPipelineRenderer
@@ -64,7 +69,7 @@ namespace ExRenderer
         template <class VT,class FT>
         void RenderFragment(Shader<VT,FT> &shader,const Matrix3x3 &mulMatrix, int32_t x,int32_t y, FT &f1,FT &f2,FT &f3)
         {
-            Vector3 weight = mulMatrix * Vector3(x, y, 1);
+            Vector3 weight = mulMatrix * Vector3(x+0.5, y+0.5, 1);
             if (weight.x >= -0.001 && weight.y >= -0.001 && weight.z >= -0.001)
             {
                 FT rf = f1 * weight.x + f2 * weight.y + f3 * weight.z;

@@ -135,7 +135,7 @@ namespace ExRenderer::Testbench::Basic
         static PureColorShader psShader;
         static CullShader cullShader;
         static DepthShader depthShader;
-        static Mesh<VertexData> cubeMesh=MeshBuilder<VertexData>::Cube();
+        static Mesh<VertexData> cubeMesh=MeshBuilder<VertexData>::Sphere();
         static Vector3 rotation1(0,0,0),rotation2(0,0,0),rotation3(0,0,0);
         static Vector3 position1(0,0,0),position2(1,1,2),position3(0,0.6,0.5);
         static VertexData v1,v2,v3;
@@ -162,7 +162,7 @@ namespace ExRenderer::Testbench::Basic
 
         renderer.Clear(Color(200, 200, 200, 255));
         renderer.SetCameraParams(3.1415/2,0.5,10);
-        renderer.SetCameraTransform(Vector3(0,0,-2),Vector3::zero());
+        renderer.SetCameraTransform(Vector3(0,0,-1),Vector3::zero());
 
         rotation1=rotation1+Vector3(0,deltaTime,deltaTime);
         rotation2=rotation2+Vector3(0,deltaTime,0);

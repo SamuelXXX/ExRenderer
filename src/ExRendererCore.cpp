@@ -86,8 +86,8 @@ namespace ExRenderer
 
     ScreenPosition ForwardPipelineRenderer::NormalToScreen(const Vector3 &nPos)
     {
-        int32_t x=(nPos.x+1)*m_width/2;
-        int32_t y=(1-nPos.y)*m_height/2;
+        number_t x=(nPos.x+1)*m_width/2;
+        number_t y=(1-nPos.y)*m_height/2;
         return ScreenPosition(x,y);
     }
 
