@@ -120,7 +120,7 @@ namespace ExRenderer
         void RenderMesh(Mesh<VT> &, Shader<VT, FT> &);
     };
     template<class VT,class FT>
-    struct FragmentRenderJobData:public JobData
+    struct FragRenderJob:public JobData
     {
         static ForwardPipelineRenderer *renderer;
         static Shader<VT,FT> *shaderPtr;
@@ -136,7 +136,7 @@ namespace ExRenderer
         uint32_t startIndex;
         uint32_t endIndex;
 
-        FragmentRenderJobData(uint32_t startIndex,uint32_t endIndex):startIndex(startIndex),endIndex(endIndex)
+        FragRenderJob(uint32_t startIndex,uint32_t endIndex):startIndex(startIndex),endIndex(endIndex)
         {
 
         }
@@ -158,25 +158,25 @@ namespace ExRenderer
     };
 
     template<class VT,class FT>
-    ForwardPipelineRenderer *FragmentRenderJobData<VT,FT>::renderer=nullptr;
+    ForwardPipelineRenderer *FragRenderJob<VT,FT>::renderer=nullptr;
     template<class VT,class FT>
-    Shader<VT,FT> *FragmentRenderJobData<VT,FT>::shaderPtr=nullptr;
+    Shader<VT,FT> *FragRenderJob<VT,FT>::shaderPtr=nullptr;
     template<class VT,class FT>
-    Matrix3x3 *FragmentRenderJobData<VT,FT>::mulMatrixPtr=nullptr;
+    Matrix3x3 *FragRenderJob<VT,FT>::mulMatrixPtr=nullptr;
     template<class VT,class FT>
-    FT *FragmentRenderJobData<VT,FT>::f1Ptr=nullptr;
+    FT *FragRenderJob<VT,FT>::f1Ptr=nullptr;
     template<class VT,class FT>
-    FT *FragmentRenderJobData<VT,FT>::f2Ptr=nullptr;
+    FT *FragRenderJob<VT,FT>::f2Ptr=nullptr;
     template<class VT,class FT>
-    FT *FragmentRenderJobData<VT,FT>::f3Ptr=nullptr;
+    FT *FragRenderJob<VT,FT>::f3Ptr=nullptr;
     template<class VT,class FT>
-    uint32_t FragmentRenderJobData<VT,FT>::xMin=0;
+    uint32_t FragRenderJob<VT,FT>::xMin=0;
     template<class VT,class FT>
-    uint32_t FragmentRenderJobData<VT,FT>::xMax=0;
+    uint32_t FragRenderJob<VT,FT>::xMax=0;
     template<class VT,class FT>
-    uint32_t FragmentRenderJobData<VT,FT>::yMin=0;
+    uint32_t FragRenderJob<VT,FT>::yMin=0;
     template<class VT,class FT>
-    uint32_t FragmentRenderJobData<VT,FT>::yMax=0;
+    uint32_t FragRenderJob<VT,FT>::yMax=0;
 
 
     template <class VT>
@@ -225,28 +225,28 @@ namespace ExRenderer
         
         
     
-        FragmentRenderJobData<VT,FT>::renderer=this;
-        FragmentRenderJobData<VT,FT>::shaderPtr=&shader;
-        FragmentRenderJobData<VT,FT>::mulMatrixPtr=&mulMatrix;
-        FragmentRenderJobData<VT,FT>::f1Ptr=&f1;
-        FragmentRenderJobData<VT,FT>::f2Ptr=&f2;
-        FragmentRenderJobData<VT,FT>::f3Ptr=&f3;
-        FragmentRenderJobData<VT,FT>::xMin=min_sx;
-        FragmentRenderJobData<VT,FT>::xMax=max_sx;
-        FragmentRenderJobData<VT,FT>::yMin=min_sy;
-        FragmentRenderJobData<VT,FT>::yMax=max_sy;
+        FragRenderJob<VT,FT>::renderer=this;
+        FragRenderJob<VT,FT>::shaderPtr=&shader;
+        FragRenderJob<VT,FT>::mulMatrixPtr=&mulMatrix;
+        FragRenderJob<VT,FT>::f1Ptr=&f1;
+        FragRenderJob<VT,FT>::f2Ptr=&f2;
+        FragRenderJob<VT,FT>::f3Ptr=&f3;
+        FragRenderJob<VT,FT>::xMin=min_sx;
+        FragRenderJob<VT,FT>::xMax=max_sx;
+        FragRenderJob<VT,FT>::yMin=min_sy;
+        FragRenderJob<VT,FT>::yMax=max_sy;
 
         uint32_t length=(max_sy-min_sy+1)*(max_sx-min_sx+1);
-        size_t requireSize=length*sizeof(FragmentRenderJobData<VT,FT>);
+        size_t requireSize=length*sizeof(FragRenderJob<VT,FT>);
         jobScheduler.PrepareScheduler(requireSize);
         
         int segCount=length/MAX_THREADS+1;
         for(int i=0;i<length;i+=segCount)
         {
-            FragmentRenderJobData<VT,FT> *rawPtr=(FragmentRenderJobData<VT,FT> *)jobScheduler.GetAllocatedData(sizeof(FragmentRenderJobData<VT,FT>));
-            FragmentRenderJobData<VT,FT> *data=new (rawPtr) FragmentRenderJobData<VT,FT>(i,i+segCount);
-            //data->Run();
-            jobScheduler.PushJob(data);
+            FragRenderJob<VT,FT> *job=jobScheduler.MakeJob<FragRenderJob<VT,FT>>(i,i+segCount);
+            // job->Run();
+            jobScheduler.PushJob(job);
+            // jobScheduler.PushJob<FragRenderJob<VT,FT>>(i,i+segCount);
         }
 
         jobScheduler.Schedule();

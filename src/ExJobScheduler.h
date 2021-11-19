@@ -67,11 +67,13 @@ namespace ExRenderer
             bufferPtr=0;
         }
 
-        void *GetAllocatedData(size_t size)
+        template <class T,typename ...Args>
+        T *MakeJob(Args... args)
         {
-            void * retPtr=(uint8_t *)universalBuffer+bufferPtr;
-            bufferPtr+=size;
-            return retPtr;
+            void *retPtr=(uint8_t *)universalBuffer+bufferPtr;
+            bufferPtr+=sizeof(T);
+            T *data=new (retPtr)T(args...);
+            return data;
         }
 
     public:
@@ -126,6 +128,13 @@ namespace ExRenderer
             {
                 Schedule();
             }
+        }
+
+        template <class T,typename ...Args>
+        void PushJob(Args... args)
+        {
+            T* data=MakeJob<T>(args...);
+            PushJob(data);
         }
         JobData *PopJob()
         {
