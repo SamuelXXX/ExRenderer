@@ -6,6 +6,7 @@ namespace ExRenderer::Testbench::Basic
     struct VertexData
     {
         Vector3 position;
+        Vector3 normal;
         Vector3 color;
     };
 

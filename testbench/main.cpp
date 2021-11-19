@@ -15,7 +15,7 @@ struct DemoJob:public ExRenderer::JobData
 
 int main(int argc, char *args[])
 {
-    Basic::Test();
+    Diffuse::Test();
     ExRenderer::JobScheduler jobScheduler;
     jobScheduler.StartThreads();
     for(int i=0;i<200;i++)

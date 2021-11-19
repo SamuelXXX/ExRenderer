@@ -75,11 +75,14 @@ namespace ExRenderer
 
     public:
         static Mesh<VT> Cube();
+        static Mesh<VT> Sphere();
 
     public:
         void AddVertex(const VT &vertice);
         void AddTriangle(uint32_t index1, uint32_t index2, uint32_t index3);
         void AddQuad(uint32_t index0,uint32_t index1,uint32_t index2,uint32_t index3);
+
+        void AppendQuad(const Vector3&,const Vector3&,const Vector3&,const Vector3&,const Vector3&);
         Mesh<VT> GenerateMesh();
     };
 }

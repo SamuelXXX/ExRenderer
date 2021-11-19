@@ -24,6 +24,30 @@ namespace ExRenderer
     }
 
     template<class VT>
+    void MeshBuilder<VT>::AppendQuad(const Vector3& pos0,const Vector3&pos1,const Vector3&pos2,const Vector3&pos3,const Vector3&normal)
+    {
+        VT v0, v1, v2, v3;
+
+        int index0=vertices.size();
+        int index1=index0+1;
+        int index2=index0+2;
+        int index3=index0+3;
+
+        v0.position=pos0;v0.normal=normal;
+        v1.position=pos1;v1.normal=normal;
+        v2.position=pos2;v2.normal=normal;
+        v3.position=pos3;v3.normal=normal;
+
+        vertices.push_back(v0);
+        vertices.push_back(v1);
+        vertices.push_back(v2);
+        vertices.push_back(v3);
+
+        AddQuad(index0,index1,index2,index3);
+
+    }
+
+    template<class VT>
     Mesh<VT> MeshBuilder<VT>::GenerateMesh()
     {
         VT *allVertices = vertices.data();
@@ -37,29 +61,63 @@ namespace ExRenderer
     Mesh<VT> MeshBuilder<VT>::Cube()
     {
         MeshBuilder mBuilder;
-        VT v1, v2, v3, v4, v5, v6, v7, v8;
-        v1.position = Vector3(-0.5, 0.5, 0.5); // luf 0
-        v2.position = Vector3(0.5, 0.5, 0.5); // ruf 1
-        v3.position = Vector3(0.5, -0.5, 0.5); // rdf 2
-        v4.position = Vector3(-0.5, -0.5, 0.5); // ldf 3
-        v5.position = Vector3(-0.5, 0.5, -0.5); // lub 4
-        v6.position = Vector3(0.5, 0.5, -0.5); //rub 5
-        v7.position = Vector3(0.5, -0.5, -0.5); // rdb 6
-        v8.position = Vector3(-0.5, -0.5, -0.5); // ldb 7
-        mBuilder.AddVertex(v1);
-        mBuilder.AddVertex(v2);
-        mBuilder.AddVertex(v3);
-        mBuilder.AddVertex(v4);
-        mBuilder.AddVertex(v5);
-        mBuilder.AddVertex(v6);
-        mBuilder.AddVertex(v7);
-        mBuilder.AddVertex(v8);
-        mBuilder.AddQuad(0,1,2,3); // forward
-        mBuilder.AddQuad(5,4,7,6); // back
-        mBuilder.AddQuad(1,0,4,5); // up
-        mBuilder.AddQuad(2,6,7,3); // down
-        mBuilder.AddQuad(0,3,7,4); // left
-        mBuilder.AddQuad(1,5,6,2); // right            
+        Vector3 luf(-0.5, 0.5, 0.5); // luf 
+        Vector3 ruf(0.5, 0.5, 0.5); // ruf 
+        Vector3 rdf(0.5, -0.5, 0.5); // rdf 
+        Vector3 ldf(-0.5, -0.5, 0.5); // ldf 
+
+        Vector3 lub(-0.5, 0.5, -0.5); // lub 
+        Vector3 rub(0.5, 0.5, -0.5); //rub 
+        Vector3 rdb(0.5, -0.5, -0.5); // rdb 
+        Vector3 ldb(-0.5, -0.5, -0.5); // ldb 
+
+        mBuilder.AppendQuad(luf,ruf,rdf,ldf,Vector3(0,0,1));
+        mBuilder.AppendQuad(lub,ldb,rdb,rub,Vector3(0,0,-1));
+
+        mBuilder.AppendQuad(luf,lub,rub,ruf,Vector3(0,1,0));
+        mBuilder.AppendQuad(ldb,ldf,rdf,rdb,Vector3(0,-1,0));
+
+        mBuilder.AppendQuad(rub,rdb,rdf,ruf,Vector3(1,0,0));
+        mBuilder.AppendQuad(luf,ldf,ldb,lub,Vector3(-1,0,0));
+          
+        return mBuilder.GenerateMesh();
+    }
+
+    template<class VT>
+    Mesh<VT> MeshBuilder<VT>::Sphere()
+    {
+        MeshBuilder mBuilder;
+
+        int poly=32;
+
+        for(int i=1;i<poly;i++)
+        {
+            float y=(float)i/poly-0.5;
+            float r=sqrtf(0.25-y*y);
+            for(int j=0;j<poly;j++)
+            {
+                float angle=3.14*2*j/poly;
+                float x=cos(angle)*r;
+                float z=sin(angle)*r;
+                VT v;
+                v.position=Vector3(x,y,z);
+                v.normal=v.position;
+                mBuilder.AddVertex(v);
+            }
+        }
+
+        for(int j=0;j<poly-2;j++)
+        {
+            int base=j*poly;
+            for(int i=0;i<poly-1;i++)
+            {
+                mBuilder.AddQuad(base+i,base+i+1,base+i+poly+1,base+i+poly);
+            }
+            mBuilder.AddQuad(base+poly-1,base,base+poly,base+poly*2-1);
+        }
+        
+
+          
         return mBuilder.GenerateMesh();
     }
 }

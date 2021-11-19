@@ -188,6 +188,13 @@ namespace ExRenderer
         number_t x, y, z, w;
         Vector4() : Vector4(0, 0, 0, 0) {}
         Vector4(number_t x, number_t y, number_t z, number_t w) : x(x), y(y), z(z), w(w) {}
+        Vector4(const Vector3 &baseVec,number_t w)
+        {
+            x = baseVec.x;
+            y = baseVec.y;
+            z = baseVec.z;
+            w = w;
+        }
 
         Vector4(const Vector3 &fromVec)
         {
@@ -195,6 +202,11 @@ namespace ExRenderer
             y = fromVec.y;
             z = fromVec.z;
             w = 1;
+        }
+
+        Vector3 xyz()
+        {
+            return Vector3(x,y,z);
         }
 
         number_t Magnitude() const

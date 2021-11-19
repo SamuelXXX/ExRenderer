@@ -9,5 +9,10 @@ namespace ExRenderer::Testbench
     {
         void Test();
     }
+
+    namespace Diffuse
+    {
+        void Test();
+    }
 }
 #endif
