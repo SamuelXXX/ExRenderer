@@ -258,13 +258,15 @@ namespace ExRenderer
         uint32_t length=(max_sy-min_sy+1)*(max_sx-min_sx+1);
         
         int dataIndex=0;
-        for(int i=0;i<length;i+=300)
+        int segCount=length/MAX_THREADS+1;
+        for(int i=0;i<length;i+=segCount)
         {
-            FragmentRenderJobData<VT,FT> *data=new (allData+dataIndex++) FragmentRenderJobData<VT,FT>(i,i+300);
-            jobScheduler.PushJob(data);
+            FragmentRenderJobData<VT,FT> *data=new (allData+dataIndex++) FragmentRenderJobData<VT,FT>(i,i+segCount);
+            data->Run();
+            // jobScheduler.PushJob(data);
         }
 
-        jobScheduler.Schedule();
+        // jobScheduler.Schedule();
     }
 
     template <class VT, class FT>

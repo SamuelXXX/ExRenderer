@@ -3,7 +3,6 @@
 namespace ExRenderer
 {
     std::mutex mtx[MAX_THREADS];
-    JobData *gJobData=nullptr;
 
     void JobThread::Wait()
     {
