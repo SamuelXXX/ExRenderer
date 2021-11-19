@@ -88,4 +88,13 @@ namespace ExRenderer
             m_buffer[i]=1;
         }
     }
+
+    void DepthBuffer::ClearRow(int32_t row)
+    {
+        int32_t rowBase=row*m_width;
+        for(uint32_t i=0;i<m_width;++i)
+        {
+            m_buffer[rowBase+i]=1;
+        }
+    }
 }

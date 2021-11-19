@@ -2,6 +2,18 @@
 
 namespace ExRenderer
 {
+    std::mutex mtx[MAX_THREADS];
+
+    void JobThread::Wait()
+    {
+        mtx[index].lock();
+    }
+
+    void JobThread::Notify()
+    {
+        mtx[index].unlock();
+    }
+
     void JobThread::Start()
     {
         running=true;
@@ -11,7 +23,8 @@ namespace ExRenderer
     void JobThread::Stop()
     {
         running=false;
-        mThread.detach();
+        Notify();
+        mThread.join();
     }
 
     #pragma GCC optimize(2)
@@ -19,12 +32,11 @@ namespace ExRenderer
     {
         while (running)
         {
+            Wait();
             if(jobData!=nullptr)
             {
-                //lock.lock();
                 jobData->Run();
                 jobData=nullptr;
-                //lock.unlock();
             }
         }
         
@@ -37,12 +49,11 @@ namespace ExRenderer
         {
             for(int i=0;i<MAX_THREADS;++i)
             {
-                //jobThreads[i].lock.lock();
                 if(jobThreads[i].jobData==nullptr&&jobSize!=0)
                 {
                     jobThreads[i].jobData=PopJob();
-                }
-                //jobThreads[i].lock.unlock();
+                    jobThreads[i].Notify();
+                } 
             }
         }
 

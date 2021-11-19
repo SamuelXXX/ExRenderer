@@ -139,9 +139,25 @@ namespace ExRenderer::Testbench::Basic
         static Vector3 rotation1(0,0,0),rotation2(0,0,0),rotation3(0,0,0);
         static Vector3 position1(0,0,0),position2(1,1,2),position3(0,0.6,0.5);
         static VertexData v1,v2,v3;
+        static float totalTime=0;
         v1.position=Vector3(0,1,0);v1.color=Vector3(0,1,0);
         v2.position=Vector3(0,0,0);v2.color=Vector3(0,0,0);
         v3.position=Vector3(1,0,0);v3.color=Vector3(1,0,0);
+
+        totalTime+=deltaTime;
+        if(totalTime>5)
+        {
+            renderer.enableRenderBoost=!renderer.enableRenderBoost;
+            totalTime=0;
+            if(renderer.enableRenderBoost)
+            {
+                std::cout<<"Enable Render Boosting"<<std::endl;
+            }
+            else
+            {
+                std::cout<<"Disable Render Boosting"<<std::endl;
+            }
+        }
         
 
         renderer.Clear(Color(200, 200, 200, 255));

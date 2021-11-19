@@ -27,6 +27,7 @@ namespace ExRenderer
         float TestDepth(int32_t, int32_t,const float);
         float GetDepth(int32_t, int32_t);
         void Clear();
+        void ClearRow(int32_t);
     };
 }
 
