@@ -110,12 +110,49 @@ namespace ExRenderer
         template <class VT>
         void DrawWireMesh(Mesh<VT> &, const Color &);
         template <class VT, class FT>
-        void Rasterization(Shader<VT, FT> &, FT &, FT &, FT &);
+        void Rasterization(Shader<VT, FT> &, FT &, FT &, FT &, bool);
         template <class VT, class FT>
         void RenderTriangle(Shader<VT, FT> &, const VT &, const VT &, const VT &);
         template <class VT, class FT>
         void RenderMesh(Mesh<VT> &, Shader<VT, FT> &);
     };
+
+
+    template<class VT,class FT>
+    struct VertRenderJob:public JobData
+    {
+        static ForwardPipelineRenderer *renderer;
+        static Shader<VT,FT> *shaderPtr;
+
+        static const VT *vertexBuffer;
+        static FT* fragmentBuffer;
+
+        uint32_t startIndex;
+        uint32_t endIndex;
+
+        VertRenderJob(uint32_t startIndex,uint32_t endIndex):startIndex(startIndex),endIndex(endIndex)
+        {
+
+        }
+
+        void Run() override
+        {
+            for (int i = startIndex; i < endIndex; i++)
+            {
+                fragmentBuffer[i] = shaderPtr->VertexShader(vertexBuffer[i]);
+            }
+            
+        }
+    };
+    template<class VT,class FT>
+    ForwardPipelineRenderer *VertRenderJob<VT,FT>::renderer=nullptr;
+    template<class VT,class FT>
+    Shader<VT,FT> *VertRenderJob<VT,FT>::shaderPtr=nullptr;
+    template<class VT,class FT>
+    const VT  *VertRenderJob<VT,FT>::vertexBuffer=nullptr;
+    template<class VT,class FT>
+    FT *VertRenderJob<VT,FT>::fragmentBuffer=nullptr;
+
     template<class VT,class FT>
     struct FragRenderJob:public JobData
     {
@@ -174,41 +211,34 @@ namespace ExRenderer
     template<class VT,class FT>
     uint32_t FragRenderJob<VT,FT>::yMax=0;
 
+    
     template<class VT,class FT>
-    struct VertRenderJob:public JobData
+    struct RasterizationJob:public JobData
     {
         static ForwardPipelineRenderer *renderer;
         static Shader<VT,FT> *shaderPtr;
+        static FT* fragments;
 
-        static const VT *vertexBuffer;
-        static FT* fragmentBuffer;
 
-        uint32_t startIndex;
-        uint32_t endIndex;
+        uint32_t index1,index2,index3;
 
-        VertRenderJob(uint32_t startIndex,uint32_t endIndex):startIndex(startIndex),endIndex(endIndex)
+        RasterizationJob(uint32_t index1,uint32_t index2,uint32_t index3):index1(index1),index2(index2),index3(index3)
         {
 
         }
 
         void Run() override
         {
-            for (int i = startIndex; i < endIndex; i++)
-            {
-                fragmentBuffer[i] = shaderPtr->VertexShader(vertexBuffer[i]);
-            }
-            
+            renderer->Rasterization(*shaderPtr,fragments[index1],fragments[index2],fragments[index3],false);
         }
     };
-    template<class VT,class FT>
-    ForwardPipelineRenderer *VertRenderJob<VT,FT>::renderer=nullptr;
-    template<class VT,class FT>
-    Shader<VT,FT> *VertRenderJob<VT,FT>::shaderPtr=nullptr;
-    template<class VT,class FT>
-    const VT  *VertRenderJob<VT,FT>::vertexBuffer=nullptr;
-    template<class VT,class FT>
-    FT *VertRenderJob<VT,FT>::fragmentBuffer=nullptr;
 
+    template<class VT,class FT>
+    ForwardPipelineRenderer *RasterizationJob<VT,FT>::renderer=nullptr;
+    template<class VT,class FT>
+    Shader<VT,FT> *RasterizationJob<VT,FT>::shaderPtr=nullptr;
+    template<class VT,class FT>
+    FT *RasterizationJob<VT,FT>::fragments=nullptr;
 
 
 
@@ -227,7 +257,7 @@ namespace ExRenderer
     }
 
     template <class VT, class FT>
-    void ForwardPipelineRenderer::Rasterization(Shader<VT, FT> &shader, FT &f1, FT &f2, FT &f3)
+    void ForwardPipelineRenderer::Rasterization(Shader<VT, FT> &shader, FT &f1, FT &f2, FT &f3, bool boost)
     {
         Vector2 sp1, sp2, sp3;
         if (!shader.doubleSide)
@@ -254,52 +284,53 @@ namespace ExRenderer
         Matrix3x3 mulMatrix(Vector3(sp1.x, sp1.y, 1),
                             Vector3(sp2.x, sp2.y, 1),
                             Vector3(sp3.x, sp3.y, 1));
-        number_t rank=mulMatrix.Rank();
-        Matrix3x3 m=mulMatrix*mulMatrix.Inverse();
-        m=m-Matrix3x3::identity();
         mulMatrix = mulMatrix.Inverse();
         
-        
-    
-        FragRenderJob<VT,FT>::renderer=this;
-        FragRenderJob<VT,FT>::shaderPtr=&shader;
-        FragRenderJob<VT,FT>::mulMatrixPtr=&mulMatrix;
-        FragRenderJob<VT,FT>::f1Ptr=&f1;
-        FragRenderJob<VT,FT>::f2Ptr=&f2;
-        FragRenderJob<VT,FT>::f3Ptr=&f3;
-        FragRenderJob<VT,FT>::xMin=min_sx;
-        FragRenderJob<VT,FT>::xMax=max_sx;
-        FragRenderJob<VT,FT>::yMin=min_sy;
-        FragRenderJob<VT,FT>::yMax=max_sy;
-
-        uint32_t length=(max_sy-min_sy+1)*(max_sx-min_sx+1);
-        size_t requireSize=length*sizeof(FragRenderJob<VT,FT>);
-        jobScheduler.PrepareScheduler(requireSize);
-        
-        int segCount=length/MAX_THREADS+1;
-
-        for(int x=min_sx;x<=max_sx;x++)
+        if(boost)
         {
-            for(int y=min_sy;y<=max_sy;y++)
+            FragRenderJob<VT,FT>::renderer=this;
+            FragRenderJob<VT,FT>::shaderPtr=&shader;
+            FragRenderJob<VT,FT>::mulMatrixPtr=&mulMatrix;
+            FragRenderJob<VT,FT>::f1Ptr=&f1;
+            FragRenderJob<VT,FT>::f2Ptr=&f2;
+            FragRenderJob<VT,FT>::f3Ptr=&f3;
+            FragRenderJob<VT,FT>::xMin=min_sx;
+            FragRenderJob<VT,FT>::xMax=max_sx;
+            FragRenderJob<VT,FT>::yMin=min_sy;
+            FragRenderJob<VT,FT>::yMax=max_sy;
+
+            uint32_t length=(max_sy-min_sy+1)*(max_sx-min_sx+1);
+            size_t requireSize=length*sizeof(FragRenderJob<VT,FT>);
+            jobScheduler.PrepareScheduler(requireSize);
+            
+            int segCount=length/MAX_THREADS+1;
+
+            for(int i=0;i<length;i+=segCount)
             {
-                RenderFragment(shader,mulMatrix,x,y,f1,f2,f3);
+                FragRenderJob<VT,FT> *job=jobScheduler.MakeJob<FragRenderJob<VT,FT>>(i,i+segCount);
+                if(segCount<100)
+                {
+                    job->Run();
+                }
+                else
+                {
+                    jobScheduler.PushJob(job);
+                }
+            }
+
+            jobScheduler.Schedule();
+        }
+        else
+        {
+            for(int x=min_sx;x<=max_sx;x++)
+            {
+                for(int y=min_sy;y<=max_sy;y++)
+                {
+                    RenderFragment(shader,mulMatrix,x,y,f1,f2,f3);
+                }
             }
         }
-
-        // for(int i=0;i<length;i+=segCount)
-        // {
-        //     FragRenderJob<VT,FT> *job=jobScheduler.MakeJob<FragRenderJob<VT,FT>>(i,i+segCount);
-        //     if(!enableRenderBoost||segCount<100)
-        //     {
-        //         job->Run();
-        //     }
-        //     else
-        //     {
-        //         jobScheduler.PushJob(job);
-        //     }
-        // }
-
-        jobScheduler.Schedule();
+        
     }
 
     template <class VT, class FT>
@@ -310,7 +341,7 @@ namespace ExRenderer
         FT f2 = shader.VertexShader(v2);
         FT f3 = shader.VertexShader(v3);
 
-        Rasterization(shader, f1, f2, f3);
+        Rasterization(shader, f1, f2, f3, enableRenderBoost);
     }
 
     template <class VT, class FT>
@@ -350,11 +381,39 @@ namespace ExRenderer
             jobScheduler.Schedule();
         }
 
-        
-        for (auto &m : mesh)
+        if(!enableRenderBoost)
         {
-            Rasterization(shader, fragments[m.index1], fragments[m.index2], fragments[m.index3]);
+            for (auto &m : mesh)
+            {
+                Rasterization(shader, fragments[m.index1], fragments[m.index2], fragments[m.index3],false);
+            }
         }
+        else
+        {
+            if(mesh.TriangleCount()<=MAX_THREADS)
+            {
+                for (auto &m : mesh)
+                {
+                    Rasterization(shader, fragments[m.index1], fragments[m.index2], fragments[m.index3],true);
+                }
+            }
+            else
+            {
+                RasterizationJob<VT,FT>::renderer=this;
+                RasterizationJob<VT,FT>::fragments=fragments;
+                RasterizationJob<VT,FT>::shaderPtr=&shader;
+
+                jobScheduler.PrepareScheduler(mesh.TriangleCount()*sizeof(RasterizationJob<VT,FT>));
+                for (auto &m : mesh)
+                {
+                    RasterizationJob<VT,FT> *job=jobScheduler.MakeJob<RasterizationJob<VT,FT>>(m.index1,m.index2,m.index3);
+                    jobScheduler.PushJob(job);
+                }
+                jobScheduler.Schedule();
+
+            }
+        }
+        
         delete[] fragments;
     }
 
