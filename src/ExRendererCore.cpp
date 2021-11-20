@@ -84,11 +84,11 @@ namespace ExRenderer
         updateMvpMatrix();
     }
 
-    ScreenPosition ForwardPipelineRenderer::NormalToScreen(const Vector3 &nPos)
+    Vector2 ForwardPipelineRenderer::NormalToScreen(const Vector3 &nPos)
     {
         number_t x=(nPos.x+1)*m_width/2;
         number_t y=(1-nPos.y)*m_height/2;
-        return ScreenPosition(x,y);
+        return Vector2(x,y);
     }
 
     void ForwardPipelineRenderer::Clear(const Color &color)
@@ -122,8 +122,8 @@ namespace ExRenderer
 
     void ForwardPipelineRenderer::DrawLineNormalize(const Vector3 &p1,const Vector3 &p2, const Color &color)
     {
-        ScreenPosition sp1=NormalToScreen(p1);
-        ScreenPosition sp2=NormalToScreen(p2);
+        Vector2 sp1=NormalToScreen(p1);
+        Vector2 sp2=NormalToScreen(p2);
 
         m_frame.DrawLine(sp1.x,sp1.y,sp2.x,sp2.y,color);
     }

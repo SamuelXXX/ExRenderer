@@ -12,19 +12,6 @@
 
 namespace ExRenderer
 {
-    struct ScreenPosition
-    {
-        number_t x;
-        number_t y;
-        ScreenPosition() = default;
-        ScreenPosition(number_t x, number_t y) : x(x), y(y) {}
-
-        bool operator==(const ScreenPosition&other)
-        {
-            return x==other.x&&y==other.y;
-        }
-    };
-
     class ForwardPipelineRenderer
     {
         SDL_Texture *sdlTexture;
@@ -56,7 +43,7 @@ namespace ExRenderer
         void SetCameraParams(float, float, float);
         void SetCameraTransform(const Vector3 &, const Vector3 &);
         void SetModelTransform(const Vector3 &, const Vector3 &);
-        ScreenPosition NormalToScreen(const Vector3 &);
+        Vector2 NormalToScreen(const Vector3 &);
 
     public:
         void Clear(const Color &);
@@ -70,7 +57,10 @@ namespace ExRenderer
         void RenderFragment(Shader<VT,FT> &shader,const Matrix3x3 &mulMatrix, int32_t x,int32_t y, FT &f1,FT &f2,FT &f3)
         {
             Vector3 weight = mulMatrix * Vector3(x+0.5, y+0.5, 1);
-            if (weight.x >= -0.001 && weight.y >= -0.001 && weight.z >= -0.001)
+            //number_t sum=(weight.x+weight.y+weight.z);
+            //weight=weight/sum;
+
+            if (weight.x >= -0.00 && weight.y >= -0.00 && weight.z >= -0.00)
             {
                 FT rf = f1 * weight.x + f2 * weight.y + f3 * weight.z;
                 if (rf.position.z < -1 || rf.position.z > 1)
@@ -163,7 +153,6 @@ namespace ExRenderer
             
         }
     };
-
     template<class VT,class FT>
     ForwardPipelineRenderer *FragRenderJob<VT,FT>::renderer=nullptr;
     template<class VT,class FT>
@@ -185,6 +174,43 @@ namespace ExRenderer
     template<class VT,class FT>
     uint32_t FragRenderJob<VT,FT>::yMax=0;
 
+    template<class VT,class FT>
+    struct VertRenderJob:public JobData
+    {
+        static ForwardPipelineRenderer *renderer;
+        static Shader<VT,FT> *shaderPtr;
+
+        static const VT *vertexBuffer;
+        static FT* fragmentBuffer;
+
+        uint32_t startIndex;
+        uint32_t endIndex;
+
+        VertRenderJob(uint32_t startIndex,uint32_t endIndex):startIndex(startIndex),endIndex(endIndex)
+        {
+
+        }
+
+        void Run() override
+        {
+            for (int i = startIndex; i < endIndex; i++)
+            {
+                fragmentBuffer[i] = shaderPtr->VertexShader(vertexBuffer[i]);
+            }
+            
+        }
+    };
+    template<class VT,class FT>
+    ForwardPipelineRenderer *VertRenderJob<VT,FT>::renderer=nullptr;
+    template<class VT,class FT>
+    Shader<VT,FT> *VertRenderJob<VT,FT>::shaderPtr=nullptr;
+    template<class VT,class FT>
+    const VT  *VertRenderJob<VT,FT>::vertexBuffer=nullptr;
+    template<class VT,class FT>
+    FT *VertRenderJob<VT,FT>::fragmentBuffer=nullptr;
+
+
+
 
     template <class VT>
     void ForwardPipelineRenderer::DrawWireMesh(Mesh<VT> &mesh, const Color &color)
@@ -203,10 +229,10 @@ namespace ExRenderer
     template <class VT, class FT>
     void ForwardPipelineRenderer::Rasterization(Shader<VT, FT> &shader, FT &f1, FT &f2, FT &f3)
     {
-        ScreenPosition sp1, sp2, sp3;
+        Vector2 sp1, sp2, sp3;
         if (!shader.doubleSide)
         {
-            Vector3 faceDir = Utils::CalTriangleFaceDir(f1.position, f2.position, f3.position);
+            Vector3 faceDir = Utils::CalTriangleFaceDir(f1.position*100, f2.position*100, f3.position*100);
             if (faceDir.z > 0) // Cull backface
                 return;
         }
@@ -228,6 +254,9 @@ namespace ExRenderer
         Matrix3x3 mulMatrix(Vector3(sp1.x, sp1.y, 1),
                             Vector3(sp2.x, sp2.y, 1),
                             Vector3(sp3.x, sp3.y, 1));
+        number_t rank=mulMatrix.Rank();
+        Matrix3x3 m=mulMatrix*mulMatrix.Inverse();
+        m=m-Matrix3x3::identity();
         mulMatrix = mulMatrix.Inverse();
         
         
@@ -248,18 +277,27 @@ namespace ExRenderer
         jobScheduler.PrepareScheduler(requireSize);
         
         int segCount=length/MAX_THREADS+1;
-        for(int i=0;i<length;i+=segCount)
+
+        for(int x=min_sx;x<=max_sx;x++)
         {
-            FragRenderJob<VT,FT> *job=jobScheduler.MakeJob<FragRenderJob<VT,FT>>(i,i+segCount);
-            if(!enableRenderBoost||segCount<100)
+            for(int y=min_sy;y<=max_sy;y++)
             {
-                job->Run();
-            }
-            else
-            {
-                jobScheduler.PushJob(job);
+                RenderFragment(shader,mulMatrix,x,y,f1,f2,f3);
             }
         }
+
+        // for(int i=0;i<length;i+=segCount)
+        // {
+        //     FragRenderJob<VT,FT> *job=jobScheduler.MakeJob<FragRenderJob<VT,FT>>(i,i+segCount);
+        //     if(!enableRenderBoost||segCount<100)
+        //     {
+        //         job->Run();
+        //     }
+        //     else
+        //     {
+        //         jobScheduler.PushJob(job);
+        //     }
+        // }
 
         jobScheduler.Schedule();
     }
@@ -279,13 +317,40 @@ namespace ExRenderer
     void ForwardPipelineRenderer::RenderMesh(Mesh<VT> &mesh, Shader<VT, FT> &shader)
     {
         shader.InjectConsts(modelMatrix, viewMatrix, projectionMatrix);
+        
+
         uint32_t vertexCount = mesh.VertexCount();
         const VT *vertices = mesh.GetVerticeBuffer();
         FT *fragments = new FT[vertexCount];
-        for (int i = 0; i < vertexCount; i++)
+
+        VertRenderJob<VT,FT>::renderer=this;
+        VertRenderJob<VT,FT>::shaderPtr=&shader;
+        VertRenderJob<VT,FT>::vertexBuffer=vertices;
+        VertRenderJob<VT,FT>::fragmentBuffer=fragments;
+
+        if(!enableRenderBoost)
         {
-            fragments[i] = shader.VertexShader(vertices[i]);
+            for (int i = 0; i < vertexCount; i++)
+            {
+                fragments[i] = shader.VertexShader(vertices[i]);
+            }
         }
+        else
+        {
+            jobScheduler.PrepareScheduler(vertexCount*sizeof(VertRenderJob<VT,FT>));
+            int segCount=vertexCount/MAX_THREADS+1;
+            for (int i = 0; i < vertexCount; i+=segCount)
+            {
+                int endIndex=i+segCount;
+                if(endIndex>vertexCount)
+                    endIndex=vertexCount;
+                VertRenderJob<VT,FT> *job=jobScheduler.MakeJob<VertRenderJob<VT,FT>>(i,endIndex);
+                jobScheduler.PushJob(job);
+            }
+            jobScheduler.Schedule();
+        }
+
+        
         for (auto &m : mesh)
         {
             Rasterization(shader, fragments[m.index1], fragments[m.index2], fragments[m.index3]);

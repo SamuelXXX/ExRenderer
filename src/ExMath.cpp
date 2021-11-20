@@ -82,9 +82,10 @@ namespace ExRenderer
         std::cout << "matrix=" << matrix << std::endl;
         std::cout << "result2=" << v << std::endl;
 
-        Matrix3x3 m3(Vector3(12, 5, 39), Vector3(15, 89, 124), Vector3(2, 3, 8));
+        Matrix3x3 m3(Vector3(1000, 1001, 1), Vector3(1000, 1001.1, 1), Vector3(1, 1, 1));
         Matrix3x3 m3inv=m3.Inverse();
         std::cout << m3inv*m3;
+        std::cout<<m3.Rank()<<std::endl;
 
         Matrix4x4 m4(Vector4(12,3,5,7),Vector4(11,5,1,-7),Vector4(-12,0,0,7),Vector4(850,3,-5,7));
         Matrix4x4 m4inv=m4.Inverse();

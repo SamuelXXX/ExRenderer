@@ -9,6 +9,7 @@
 namespace ExRenderer
 {
     using number_t = float;
+    using matrix_t = double;
     struct Vector2
     {
         number_t x, y;
@@ -355,7 +356,7 @@ namespace ExRenderer
     };
     struct Matrix3x3
     {
-        number_t data[9];
+        matrix_t data[9];
 
         Matrix3x3()
         {
@@ -394,76 +395,51 @@ namespace ExRenderer
             return result;
         }
 
-        void RowOpMul(Matrix3x3 &l, Matrix3x3 &r, uint32_t rowIndex, number_t mulValue) const
-        {
-            if (mulValue != 0)
-            {
-                l.data[rowIndex * 3] *= mulValue;
-                l.data[rowIndex * 3 + 1] *= mulValue;
-                l.data[rowIndex * 3 + 2] *= mulValue;
-
-                r.data[rowIndex * 3] *= mulValue;
-                r.data[rowIndex * 3 + 1] *= mulValue;
-                r.data[rowIndex * 3 + 2] *= mulValue;
-            }
-        }
-
-        void RowOpAdd(Matrix3x3 &l, Matrix3x3 &r, uint32_t dstRow, uint32_t srcRow, float ratio = 1) const
-        {
-            l.data[dstRow * 3] += l.data[srcRow * 3] * ratio;
-            l.data[dstRow * 3 + 1] += l.data[srcRow * 3 + 1] * ratio;
-            l.data[dstRow * 3 + 2] += l.data[srcRow * 3 + 2] * ratio;
-
-            r.data[dstRow * 3] += r.data[srcRow * 3] * ratio;
-            r.data[dstRow * 3 + 1] += r.data[srcRow * 3 + 1] * ratio;
-            r.data[dstRow * 3 + 2] += r.data[srcRow * 3 + 2] * ratio;
-        }
-
-        void RowOpSub(Matrix3x3 &l, Matrix3x3 &r, uint32_t dstRow, uint32_t srcRow, float ratio = 1) const
-        {
-            l.data[dstRow * 3] -= l.data[srcRow * 3] * ratio;
-            l.data[dstRow * 3 + 1] -= l.data[srcRow * 3 + 1] * ratio;
-            l.data[dstRow * 3 + 2] -= l.data[srcRow * 3 + 2] * ratio;
-
-            r.data[dstRow * 3] -= r.data[srcRow * 3] * ratio;
-            r.data[dstRow * 3 + 1] -= r.data[srcRow * 3 + 1] * ratio;
-            r.data[dstRow * 3 + 2] -= r.data[srcRow * 3 + 2] * ratio;
-        }
-
-        number_t Data(uint32_t row, uint32_t col) const
+        matrix_t Data(uint32_t row, uint32_t col) const
         {
             return data[row * 3 + col];
         }
 
+        matrix_t SubMatrixRank(uint32_t row, uint32_t col) const
+        {
+            uint32_t row1=(row+1)%3,row2=(row+2)%3;
+            uint32_t col1=(col+1)%3,col2=(col+2)%3;
+
+            matrix_t val=Data(row1,col1)*Data(row2,col2)-Data(row2,col1)*Data(row1,col2);
+            return val;
+        }
+
+        matrix_t Rank() const
+        {
+            matrix_t rank=0;
+            for(int row=0;row<3;++row)
+            {
+
+                rank+=Data(row,0)*SubMatrixRank(row,0);
+                
+            }
+            return rank;
+        }
+
         Matrix3x3 Inverse() const
         {
-            Matrix3x3 l = *this;
-            Matrix3x3 r = Matrix3x3::identity();
-
-            for(int c=0;c<3;++c)
+            matrix_t rank=Rank();
+            if(rank==0)
             {
-                for(int i=c;i<3;++i)
-                {
-                    RowOpMul(l, r, i, l.Data(i, c));
-                }
-
-                for(int i=c+1;i<3;++i)
-                {
-                    RowOpAdd(l, r, c, i);
-                }
-
-                for(int i=0;i<3;++i)
-                {
-                    if(i!=c)
-                    {
-                        RowOpSub(l, r, i, c, l.Data(i, c) / l.Data(c, c));
-                    }
-                }
-
-                RowOpMul(l, r, c, 1 / l.Data(c, c));
+                return *this;
             }
 
-            return r;
+            Matrix3x3 result;
+            for(int row=0;row<3;++row)
+            {
+                for(int col=0;col<3;++col)
+                {
+                    result.data[3*row+col]=SubMatrixRank(row,col);
+                }
+            }
+
+            result=result.Transform();
+            return result/rank;
         }
 
         Matrix3x3 operator+(const Matrix3x3 &other) const
@@ -496,7 +472,7 @@ namespace ExRenderer
 
             return result;
         }
-        Matrix3x3 operator*(number_t ratio) const
+        Matrix3x3 operator*(matrix_t ratio) const
         {
             Matrix3x3 result;
             for (int i = 0; i < 9; ++i)
@@ -506,7 +482,7 @@ namespace ExRenderer
 
             return result;
         }
-        Matrix3x3 operator/(number_t ratio) const
+        Matrix3x3 operator/(matrix_t ratio) const
         {
             Matrix3x3 result;
             for (int i = 0; i < 9; ++i)
@@ -549,7 +525,7 @@ namespace ExRenderer
 
     struct Matrix4x4
     {
-        number_t data[16];
+        matrix_t data[16];
 
         Matrix4x4()
         {
@@ -590,7 +566,7 @@ namespace ExRenderer
             return result;
         }
 
-        void RowOpMul(Matrix4x4 &l, Matrix4x4 &r, uint32_t rowIndex, number_t mulValue) const
+        void RowOpMul(Matrix4x4 &l, Matrix4x4 &r, uint32_t rowIndex, matrix_t mulValue) const
         {
             if (mulValue != 0)
             {
@@ -606,7 +582,7 @@ namespace ExRenderer
             }
         }
 
-        void RowOpAdd(Matrix4x4 &l, Matrix4x4 &r, uint32_t dstRow, uint32_t srcRow, float ratio = 1) const
+        void RowOpAdd(Matrix4x4 &l, Matrix4x4 &r, uint32_t dstRow, uint32_t srcRow, matrix_t ratio = 1) const
         {
             l.data[dstRow * 4] += l.data[srcRow * 4] * ratio;
             l.data[dstRow * 4 + 1] += l.data[srcRow * 4 + 1] * ratio;
@@ -619,7 +595,7 @@ namespace ExRenderer
             r.data[dstRow * 4 + 3] += r.data[srcRow * 4 + 3] * ratio;
         }
 
-        void RowOpSub(Matrix4x4 &l, Matrix4x4 &r, uint32_t dstRow, uint32_t srcRow, float ratio = 1) const
+        void RowOpSub(Matrix4x4 &l, Matrix4x4 &r, uint32_t dstRow, uint32_t srcRow, matrix_t ratio = 1) const
         {
             l.data[dstRow * 4] -= l.data[srcRow * 4] * ratio;
             l.data[dstRow * 4 + 1] -= l.data[srcRow * 4 + 1] * ratio;
@@ -632,7 +608,7 @@ namespace ExRenderer
             r.data[dstRow * 4 + 3] -= r.data[srcRow * 4 + 3] * ratio;
         }
 
-        number_t Data(uint32_t row, uint32_t col) const
+        matrix_t Data(uint32_t row, uint32_t col) const
         {
             return data[row * 4 + col];
         }
@@ -646,7 +622,11 @@ namespace ExRenderer
             {
                 for(int i=c;i<4;++i)
                 {
-                    RowOpMul(l, r, i, l.Data(i, c));
+                    if(l.Data(i,c)<0)
+                    {
+                        RowOpMul(l, r, i, -1);
+                    }
+                    
                 }
 
                 for(int i=c+1;i<4;++i)
@@ -719,7 +699,7 @@ namespace ExRenderer
 
             return result;
         }
-        Matrix4x4 operator*(number_t ratio) const
+        Matrix4x4 operator*(matrix_t ratio) const
         {
             Matrix4x4 result;
             for (int i = 0; i < 16; ++i)
@@ -729,7 +709,7 @@ namespace ExRenderer
 
             return result;
         }
-        Matrix4x4 operator/(number_t ratio) const
+        Matrix4x4 operator/(matrix_t ratio) const
         {
             Matrix4x4 result;
             for (int i = 0; i < 16; ++i)
