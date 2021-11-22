@@ -4,6 +4,6 @@ using namespace ExRenderer::Testbench;
 
 int main(int argc, char *args[])
 {
-    Math::Test();
+    Basic::Test();
     return 0;
 }

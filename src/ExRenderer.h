@@ -2,6 +2,6 @@
 #define __EXRENDERER_H__
 
 #include "ExJobScheduler.h"
-#include "ExRendererCore.h"
+#include "ExForwardRenderPipeline.h"
 
 #endif

@@ -84,6 +84,11 @@ namespace ExRenderer
             jobDataBufferSize=0;
         }
 
+        JobScheduler(const JobScheduler&)=delete;
+        JobScheduler(JobScheduler&&)=delete;
+        JobScheduler& operator=(const JobScheduler&)=delete;
+        JobScheduler& operator=(JobScheduler&&)=delete;
+
         ~JobScheduler()
         {
             std::cout << "Finish JobScheduler" << std::endl;
@@ -131,7 +136,6 @@ namespace ExRenderer
         }
 
         void Schedule();
-        void NotifyAll();
     };
 }
 

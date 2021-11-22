@@ -1,4 +1,4 @@
-#include"ExRendererCore.h"
+#include"ExForwardRenderPipeline.h"
 
 namespace ExRenderer
 {
@@ -17,20 +17,23 @@ namespace ExRenderer
     ForwardPipelineRenderer *ClearScreenJob::renderer=nullptr;
     Color ClearScreenJob::color(0,0,0,0);
 
-    ForwardPipelineRenderer::ForwardPipelineRenderer(uint32_t w, uint32_t h):m_width(w),m_height(h)
+    ForwardPipelineRenderer::ForwardPipelineRenderer(const char *title,uint32_t w, uint32_t h):m_width(w),m_height(h)
     {
         m_frame=FrameBuffer(w,h);
         m_depth=DepthBuffer(w,h);
         enableRenderBoost=true;
-    }
 
-    void ForwardPipelineRenderer::InitializeEnv(const char *title)
-    {
         SDL_Init(SDL_INIT_EVERYTHING);
 
         sdlWindow = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, m_width, m_height, 0);
         sdlRenderer = SDL_CreateRenderer(sdlWindow, -1, SDL_RENDERER_ACCELERATED);
         sdlTexture = SDL_CreateTexture(sdlRenderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STREAMING, m_width, m_height);
+    }
+
+    ForwardPipelineRenderer::~ForwardPipelineRenderer()
+    {
+        SDL_DestroyRenderer(sdlRenderer);
+        SDL_DestroyWindow(sdlWindow);
     }
 
     bool ForwardPipelineRenderer::UpdateEnv()
@@ -42,17 +45,6 @@ namespace ExRenderer
         SDL_Event event;
         SDL_PollEvent(&event);
         return event.type==SDL_QUIT;
-    }
-
-    void ForwardPipelineRenderer::FinalizeEnv()
-    {
-        SDL_DestroyRenderer(sdlRenderer);
-        SDL_DestroyWindow(sdlWindow);
-    }
-
-    void ForwardPipelineRenderer::updateMvpMatrix()
-    {
-        mvpMatrix=projectionMatrix*viewMatrix*modelMatrix;
     }
 
     void ForwardPipelineRenderer::SetCameraParams(float fov, float nearPlane, float farPlane)
@@ -78,13 +70,6 @@ namespace ExRenderer
     {
         modelMatrix=Matrix4x4(position,rotation);
         updateMvpMatrix();
-    }
-
-    Vector2 ForwardPipelineRenderer::NormalToScreen(const Vector3 &nPos)
-    {
-        number_t x=(nPos.x+1)*m_width/2;
-        number_t y=(1-nPos.y)*m_height/2;
-        return Vector2(x,y);
     }
 
     void ForwardPipelineRenderer::Clear(const Color &color)

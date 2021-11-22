@@ -185,8 +185,7 @@ namespace ExRenderer::Testbench::Basic
 
     void Test()
     {
-        ForwardPipelineRenderer fRenderer(1920, 1080);
-        fRenderer.InitializeEnv("Demo");
+        ForwardPipelineRenderer fRenderer("Basic",1920, 1080);
         uint32_t frameIndex = 0;
         clock_t lastTime=clock();
         uint32_t lastFrame=0;
@@ -194,7 +193,7 @@ namespace ExRenderer::Testbench::Basic
         float deltaTime=0;
         clock_t lastTickTime=clock();
         
-        while (true)
+        while (!fRenderer.UpdateEnv())
         {
             deltaTime=(float)(clock()-lastTickTime)/CLOCKS_PER_SEC;
             lastTickTime=clock();
@@ -211,10 +210,6 @@ namespace ExRenderer::Testbench::Basic
                 lastTime=curTime;
                 lastFrame=frameIndex;
             }
-
-            if(fRenderer.UpdateEnv())
-                break;
         }
-        fRenderer.FinalizeEnv();
     }
 }

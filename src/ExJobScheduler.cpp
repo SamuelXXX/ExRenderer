@@ -11,7 +11,11 @@ namespace ExRenderer
 
     void JobThread::Notify()
     {
-        mtx[index].unlock();
+        if(!mtx[index].try_lock())
+        {
+            mtx[index].unlock();
+        }
+        
     }
 
     void JobThread::Start()

@@ -111,8 +111,7 @@ namespace ExRenderer::Testbench::Diffuse
 
     void Test()
     {
-        ForwardPipelineRenderer fRenderer(1920, 1080);
-        fRenderer.InitializeEnv("Demo");
+        ForwardPipelineRenderer fRenderer("Diffuse",1920, 1080);
         // fRenderer.enableRenderBoost=false;
         uint32_t frameIndex = 0;
         clock_t lastTime=clock();
@@ -121,7 +120,7 @@ namespace ExRenderer::Testbench::Diffuse
         float deltaTime=0;
         clock_t lastTickTime=clock();
         
-        while (true)
+        while (!fRenderer.UpdateEnv())
         {
             deltaTime=(float)(clock()-lastTickTime)/CLOCKS_PER_SEC;
             lastTickTime=clock();
@@ -138,10 +137,6 @@ namespace ExRenderer::Testbench::Diffuse
                 lastTime=curTime;
                 lastFrame=frameIndex;
             }
-
-            if(fRenderer.UpdateEnv())
-                break;
         }
-        fRenderer.FinalizeEnv();
     }
 }
