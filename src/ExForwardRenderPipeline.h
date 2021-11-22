@@ -9,6 +9,7 @@
 #include "ExShader.h"
 #include "ExUtils.h"
 #include "ExJobScheduler.h"
+#include <time.h>
 
 namespace ExRenderer
 {
@@ -28,6 +29,33 @@ namespace ExRenderer
         Matrix4x4 mvpMatrix;
 
         void updateMvpMatrix() { mvpMatrix = projectionMatrix * viewMatrix * modelMatrix; }
+
+    private:
+        uint64_t currentFrame;
+        clock_t lastUpdateTime;
+        clock_t lastFpsStatTime;
+        uint64_t lastFpsStatFrame;
+        void updateDeltaTime()
+        {
+            clock_t curTime=clock();
+            deltaTime=(float)(curTime-lastUpdateTime)/CLOCKS_PER_SEC;
+            lastUpdateTime=curTime;
+
+            clock_t fpsStatTimePassed=curTime-lastFpsStatTime;
+            if(fpsStatTimePassed>=CLOCKS_PER_SEC)
+            {
+                fpsStat=(float)(currentFrame-lastFpsStatFrame)/((float)fpsStatTimePassed/CLOCKS_PER_SEC);
+                std::cout<<"FPS:"<<fpsStat<<std::endl;
+                lastFpsStatFrame=currentFrame;
+                lastFpsStatTime=curTime;
+            }
+
+            currentFrame++;
+        }
+
+    public:
+        float deltaTime;
+        float fpsStat;
 
     public:
         ForwardPipelineRenderer() = delete;

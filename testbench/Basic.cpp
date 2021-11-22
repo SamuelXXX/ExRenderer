@@ -129,7 +129,7 @@ namespace ExRenderer::Testbench::Basic
         }
     };
 
-    void UpdateRenderer(ForwardPipelineRenderer &renderer, float deltaTime)
+    void UpdateRenderer(ForwardPipelineRenderer &renderer)
     {
         static ColorfulShader colorShader;
         static PureColorShader psShader;
@@ -143,6 +143,8 @@ namespace ExRenderer::Testbench::Basic
         v1.position=Vector3(0,1,0);v1.color=Vector3(0,1,0);
         v2.position=Vector3(0,0,0);v2.color=Vector3(0,0,0);
         v3.position=Vector3(1,0,0);v3.color=Vector3(1,0,0);
+
+        float deltaTime=renderer.deltaTime;
 
         totalTime+=deltaTime;
         if(totalTime>5)
@@ -186,29 +188,12 @@ namespace ExRenderer::Testbench::Basic
     void Test()
     {
         ForwardPipelineRenderer fRenderer("Basic",1920, 1080);
-        uint32_t frameIndex = 0;
-        clock_t lastTime=clock();
-        uint32_t lastFrame=0;
-
-        float deltaTime=0;
-        clock_t lastTickTime=clock();
-        
-        while (!fRenderer.UpdateEnv())
+        while (true)
         {
-            deltaTime=(float)(clock()-lastTickTime)/CLOCKS_PER_SEC;
-            lastTickTime=clock();
-            UpdateRenderer(fRenderer, deltaTime);
-            frameIndex++;
-
-            clock_t curTime=clock();
-            if(curTime-lastTime>CLOCKS_PER_SEC)
+            UpdateRenderer(fRenderer);
+            if(fRenderer.UpdateEnv())
             {
-                uint32_t framePassed=frameIndex-lastFrame;
-                float fps=(float)(framePassed)/(curTime-lastTime)*CLOCKS_PER_SEC;
-
-                std::cout<<"FPS:"<<framePassed<<std::endl;
-                lastTime=curTime;
-                lastFrame=frameIndex;
+                break;
             }
         }
     }

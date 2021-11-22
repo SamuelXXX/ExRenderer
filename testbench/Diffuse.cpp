@@ -86,7 +86,7 @@ namespace ExRenderer::Testbench::Diffuse
         }
     };
 
-    void UpdateRenderer(ForwardPipelineRenderer &renderer, float deltaTime)
+    void UpdateRenderer(ForwardPipelineRenderer &renderer)
     {
         static DiffuseShader diffShader;
         static Mesh<VertexData> cubeMesh=MeshBuilder<VertexData>::Cube();
@@ -95,7 +95,7 @@ namespace ExRenderer::Testbench::Diffuse
         static Vector3 rotation1(0,0,0);
         static Vector3 lightPosition=Vector3(1,1,1);
         static float angle=0;
-        angle+=deltaTime;
+        angle+=renderer.deltaTime;
         lightPosition=Vector3(3*cos(angle),1,3*sin(angle));
         
         diffShader.SetLight(lightPosition,Vector4(2,2,2,1));
@@ -112,30 +112,12 @@ namespace ExRenderer::Testbench::Diffuse
     void Test()
     {
         ForwardPipelineRenderer fRenderer("Diffuse",1920, 1080);
-        // fRenderer.enableRenderBoost=false;
-        uint32_t frameIndex = 0;
-        clock_t lastTime=clock();
-        uint32_t lastFrame=0;
-
-        float deltaTime=0;
-        clock_t lastTickTime=clock();
-        
-        while (!fRenderer.UpdateEnv())
+        while (true)
         {
-            deltaTime=(float)(clock()-lastTickTime)/CLOCKS_PER_SEC;
-            lastTickTime=clock();
-            UpdateRenderer(fRenderer, deltaTime);
-            frameIndex++;
-
-            clock_t curTime=clock();
-            if(curTime-lastTime>CLOCKS_PER_SEC)
+            UpdateRenderer(fRenderer);
+            if(fRenderer.UpdateEnv())
             {
-                uint32_t framePassed=frameIndex-lastFrame;
-                float fps=(float)(framePassed)/(curTime-lastTime)*CLOCKS_PER_SEC;
-
-                std::cout<<"FPS:"<<framePassed<<std::endl;
-                lastTime=curTime;
-                lastFrame=frameIndex;
+                break;
             }
         }
     }
