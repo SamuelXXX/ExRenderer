@@ -30,8 +30,10 @@ namespace ExRenderer
         void updateMvpMatrix();
 
     public:
-        ForwardPipelineRenderer() = default;
+        ForwardPipelineRenderer() = delete;
         ForwardPipelineRenderer(uint32_t, uint32_t);
+        ForwardPipelineRenderer(const ForwardPipelineRenderer&)=delete;
+        ForwardPipelineRenderer(ForwardPipelineRenderer&&)=delete;
 
     public:
         bool enableRenderBoost;

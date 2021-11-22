@@ -767,7 +767,5 @@ namespace ExRenderer
 
     std::ostream &operator<<(std::ostream &os, const Matrix3x3 &matrix);
     std::ostream &operator<<(std::ostream &os, const Matrix4x4 &matrix);
-
-    void MathTestBench();
 }
 #endif

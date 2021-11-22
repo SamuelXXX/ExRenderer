@@ -39,51 +39,37 @@ namespace ExRenderer
 
         JobThread jobThreads[MAX_THREADS];
 
-        void *universalBuffer;
-        size_t universalBufferSize;
-        size_t bufferPtr;
-        void* requireUniversalBuffer(size_t size)
-        {
-            if(size>universalBufferSize)
-            {
-                if(universalBuffer!=nullptr)
-                {
-                    std::free(universalBuffer);
-                }
-                // std::cout<<"malloc:"<<size<<std::endl;
-                universalBuffer=std::malloc(size);
-                universalBufferSize=size;
-            }
-            return universalBuffer;
-        }
+        void *jobDataBuffer;
+        size_t jobDataBufferSize;
+        size_t jobDataBufferCursor;
 
     public:
-        
-
         void PrepareScheduler(size_t size)
         {
-            requireUniversalBuffer(size);
+            if(size>jobDataBufferSize)
+            {
+                if(jobDataBuffer!=nullptr)
+                {
+                    std::free(jobDataBuffer);
+                }
+                jobDataBuffer=std::malloc(size);
+                jobDataBufferSize=size;
+            }
 
-            bufferPtr=0;
+            jobDataBufferCursor=0;
         }
 
         template <class T,typename ...Args>
         T *MakeJob(Args... args)
         {
-            void *retPtr=(uint8_t *)universalBuffer+bufferPtr;
-            bufferPtr+=sizeof(T);
+            void *retPtr=(uint8_t *)jobDataBuffer+jobDataBufferCursor;
+            jobDataBufferCursor+=sizeof(T);
             T *data=new (retPtr)T(args...);
             return data;
         }
 
     public:
         JobScheduler()
-        {
-            
-        }
-
-    public:
-        void StartThreads()
         {
             std::cout << "Init JobScheduler" << std::endl;
             for (int i = 0; i < MAX_THREADS; ++i)
@@ -94,11 +80,11 @@ namespace ExRenderer
                 jobThreads[i].Start();
             }
 
-            universalBuffer=nullptr;
-            universalBufferSize=0;
+            jobDataBuffer=nullptr;
+            jobDataBufferSize=0;
         }
 
-        void StopThreads()
+        ~JobScheduler()
         {
             std::cout << "Finish JobScheduler" << std::endl;
             for (int i = 0; i < MAX_THREADS; ++i)
@@ -107,11 +93,13 @@ namespace ExRenderer
                 jobThreads[i].running = false;
                 jobThreads[i].Stop();
             }
-            if(universalBuffer!=nullptr)
+            if(jobDataBuffer!=nullptr)
             {
-                std::free(universalBuffer);
+                std::free(jobDataBuffer);
             }
         }
+
+    public:
         void PushJob(JobData *data)
         {
             for (int i = 0; i < MAX_THREADS; ++i)
@@ -136,10 +124,12 @@ namespace ExRenderer
             T* data=MakeJob<T>(args...);
             PushJob(data);
         }
+
         JobData *PopJob()
         {
             return m_jobs[--jobSize];
         }
+
         void Schedule();
         void NotifyAll();
     };

@@ -5,6 +5,16 @@
 
 namespace ExRenderer::Testbench
 {
+    namespace Math
+    {
+        void Test();
+    }
+
+    namespace JobSystem
+    {
+        void Test();
+    }
+
     namespace Basic
     {
         void Test();

@@ -111,8 +111,7 @@ namespace ExRenderer::Testbench::Diffuse
 
     void Test()
     {
-        MathTestBench();
-        ForwardPipelineRenderer fRenderer = ForwardPipelineRenderer(1920, 1080);
+        ForwardPipelineRenderer fRenderer(1920, 1080);
         fRenderer.InitializeEnv("Demo");
         // fRenderer.enableRenderBoost=false;
         uint32_t frameIndex = 0;
