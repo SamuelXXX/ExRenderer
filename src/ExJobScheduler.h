@@ -9,7 +9,7 @@
 #define MAX_THREADS 16
 #define MAX_JOBS 16
 
-namespace ExRenderer
+namespace ExRenderer::JobSystem
 {
     struct JobData
     {

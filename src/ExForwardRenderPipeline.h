@@ -18,7 +18,7 @@ namespace ExRenderer
         SDL_Texture *sdlTexture;
         SDL_Window *sdlWindow;
         SDL_Renderer *sdlRenderer;
-        JobScheduler jobScheduler;
+        JobSystem::JobScheduler jobScheduler;
 
         uint32_t m_width, m_height;
         FrameBuffer m_frame;
@@ -103,7 +103,7 @@ namespace ExRenderer
     };
 
     template <class VT, class FT>
-    struct VertRenderJob : public JobData
+    struct VertRenderJob : public JobSystem::JobData
     {
         static ForwardPipelineRenderer *renderer;
         static Shader<VT, FT> *shaderPtr;
@@ -136,7 +136,7 @@ namespace ExRenderer
     FT *VertRenderJob<VT, FT>::fragmentBuffer = nullptr;
 
     template <class VT, class FT>
-    struct RasterizationJob : public JobData
+    struct RasterizationJob : public JobSystem::JobData
     {
         static ForwardPipelineRenderer *renderer;
         static Shader<VT, FT> *shaderPtr;
@@ -161,7 +161,7 @@ namespace ExRenderer
     FT *RasterizationJob<VT, FT>::fragments = nullptr;
 
     template <class VT, class FT>
-    struct FragRenderJob : public JobData
+    struct FragRenderJob : public JobSystem::JobData
     {
         static ForwardPipelineRenderer *renderer;
         static Shader<VT, FT> *shaderPtr;

@@ -2,7 +2,7 @@
 
 namespace ExRenderer
 {
-    struct ClearScreenJob:public JobData
+    struct ClearScreenJob:public JobSystem::JobData
     {
         static ForwardPipelineRenderer *renderer;
         static Color color;

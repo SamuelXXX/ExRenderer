@@ -2,7 +2,7 @@
 
 namespace ExRenderer::Testbench::JobSystem
 {
-    struct DemoJob:public JobData
+    struct DemoJob:public ExRenderer::JobSystem::JobData
     {
         uint32_t index;
 
@@ -17,7 +17,7 @@ namespace ExRenderer::Testbench::JobSystem
 
     void Test()
     {
-        JobScheduler jobScheduler;
+        ExRenderer::JobSystem::JobScheduler jobScheduler;
 
         jobScheduler.PrepareScheduler<DemoJob>(200);
         for(int i=0;i<100;++i)

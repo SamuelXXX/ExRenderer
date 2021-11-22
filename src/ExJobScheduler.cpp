@@ -1,19 +1,19 @@
 #include"ExJobScheduler.h"
 
-namespace ExRenderer
+namespace ExRenderer::JobSystem
 {
-    std::mutex mtx[MAX_THREADS];
+    std::mutex jobMutex[MAX_THREADS];
 
     void JobThread::Wait()
     {
-        mtx[index].lock();
+        jobMutex[index].lock();
     }
 
     void JobThread::Notify()
     {
-        if(!mtx[index].try_lock())
+        if(!jobMutex[index].try_lock())
         {
-            mtx[index].unlock();
+            jobMutex[index].unlock();
         }
         
     }
