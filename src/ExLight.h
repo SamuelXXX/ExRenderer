@@ -8,8 +8,8 @@ namespace ExRenderer
 {
     class Light
     {
-        virtual Vector3 GetDirection(const Vector3&)=0;
-        virtual Vector4 GetColor(const Vector3&)=0;
+        virtual Vector3 GetDirection(const Vector3&) const=0;
+        virtual Vector4 GetColor(const Vector3&)  const=0;
     };
 
     class DirectionalLight:public Light
@@ -20,12 +20,12 @@ namespace ExRenderer
         DirectionalLight(const Vector3& direction,const Vector4 &color):direction(direction),color(color){}
         
         public:
-        Vector3 GetDirection(const Vector3& worldPos) override
+        Vector3 GetDirection(const Vector3& worldPos) const override
         {
             return direction;
         }
 
-        Vector4 GetColor(const Vector3& worldPos) override
+        Vector4 GetColor(const Vector3& worldPos) const override
         {
             return color;
         }
@@ -40,12 +40,12 @@ namespace ExRenderer
         PointLight(const Vector3& position,const Vector4 &color):position(position),color(color){}
         
         public:
-        Vector3 GetDirection(const Vector3& worldPos) override
+        Vector3 GetDirection(const Vector3& worldPos) const override
         {
             return worldPos-position;
         }
 
-        Vector4 GetColor(const Vector3& worldPos) override
+        Vector4 GetColor(const Vector3& worldPos) const override
         {
             Vector3 dir=worldPos-position;
             float intensity=1/(dir*dir);
@@ -84,6 +84,17 @@ namespace ExRenderer
                 delete lightPtr;
             }
             m_lights.clear();
+        }
+
+        public:
+        std::vector<Light*>::iterator begin()
+        {
+            return m_lights.begin();
+        }
+
+        std::vector<Light*>::iterator end()
+        {
+            return m_lights.end();
         }
         
     };

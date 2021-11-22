@@ -10,6 +10,7 @@
 #include "ExUtils.h"
 #include "ExJobScheduler.h"
 #include <time.h>
+#include "ExLight.h"
 
 namespace ExRenderer
 {
@@ -27,6 +28,8 @@ namespace ExRenderer
         Matrix4x4 viewMatrix;
         Matrix4x4 projectionMatrix;
         Matrix4x4 mvpMatrix;
+
+        LightPackManager lightManager;
 
         void updateMvpMatrix() { mvpMatrix = projectionMatrix * viewMatrix * modelMatrix; }
 
@@ -80,6 +83,17 @@ namespace ExRenderer
             number_t y = (1 - nPos.y) * m_height / 2;
             return Vector2(x, y);
         }
+    
+    public:
+    void ClearLights()
+    {
+        lightManager.ClearLights();
+    }
+    template<class LT, typename ...Args>
+    void AddLight(Args... args)
+    {
+        lightManager.AddLight<LT>(args...);
+    }
 
     public:
         void Clear(const Color &);
@@ -100,6 +114,12 @@ namespace ExRenderer
         void RenderTriangle(Shader<VT, FT> &, const VT &, const VT &, const VT &);
         template <class VT, class FT>
         void RenderMesh(Mesh<VT> &, Shader<VT, FT> &);
+
+    private:
+        template <class VT, class FT>
+        void _renderMeshOneLightPass(Mesh<VT> &, Shader<VT, FT> &,Light *);
+        template <class VT, class FT>
+        void _renderTriangleOneLightPass(Shader<VT, FT> &, const VT &, const VT &, const VT &,Light *);
     };
 
     template <class VT, class FT>
@@ -354,6 +374,23 @@ namespace ExRenderer
     void ForwardPipelineRenderer::RenderTriangle(Shader<VT, FT> &shader, const VT &v1, const VT &v2, const VT &v3)
     {
         shader.InjectConsts(modelMatrix, viewMatrix, projectionMatrix);
+        if(shader.multiLightPass)
+        {
+            for(auto light:lightManager)
+            {
+                _renderTriangleOneLightPass(shader,v1,v2,v3,light);
+            }
+        }
+        else
+        {
+            _renderTriangleOneLightPass(shader,v1,v2,v3,nullptr);
+        }
+    }
+
+    template <class VT, class FT>
+    void ForwardPipelineRenderer::_renderTriangleOneLightPass(Shader<VT, FT> &shader, const VT &v1, const VT &v2, const VT &v3,Light *lightPtr)
+    {
+        shader.InjectLight(lightPtr);
         FT f1 = shader.VertexShader(v1);
         FT f2 = shader.VertexShader(v2);
         FT f3 = shader.VertexShader(v3);
@@ -365,6 +402,24 @@ namespace ExRenderer
     void ForwardPipelineRenderer::RenderMesh(Mesh<VT> &mesh, Shader<VT, FT> &shader)
     {
         shader.InjectConsts(modelMatrix, viewMatrix, projectionMatrix);
+
+        if(shader.multiLightPass)
+        {
+            for(auto light:lightManager)
+            {
+                _renderMeshOneLightPass(mesh,shader,light);
+            }
+        }
+        else
+        {
+            _renderMeshOneLightPass(mesh,shader,nullptr);
+        }
+    }
+
+    template <class VT, class FT>
+    void ForwardPipelineRenderer::_renderMeshOneLightPass(Mesh<VT> &mesh, Shader<VT, FT> &shader,Light *lightPtr)
+    {
+        shader.InjectLight(lightPtr);
 
         uint32_t vertexCount = mesh.VertexCount();
         const VT *vertices = mesh.GetVerticeBuffer();

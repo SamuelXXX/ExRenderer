@@ -3,6 +3,7 @@
 
 #include "ExFrameBuffer.h"
 #include "ExMath.h"
+#include "ExLight.h"
 
 namespace ExRenderer
 {
@@ -25,6 +26,7 @@ namespace ExRenderer
         Matrix4x4 projectionMatrix;
         Matrix4x4 MVPMatrix;
         Matrix4x4 VPMatrix;
+        const Light *light;
 
     public:
         ZTestType zTest;
@@ -49,6 +51,25 @@ namespace ExRenderer
             projectionMatrix = p;
             MVPMatrix = p * v * m;
             VPMatrix = p * v;
+        }
+
+        void InjectLight(const Light *lightPtr)
+        {
+            light=lightPtr;
+        }
+
+        Vector3 GetLightDirection(const Vector3 &worldPos)
+        {
+            if(light)
+                return light->GetDirection(worldPos);
+            return Vector3::zero();
+        }
+
+        Vector4 GetLightColor(const Vector3 &worldPos)
+        {
+            if(light)
+                return light->GetColor(worldPos);
+            return Vector4::zero();
         }
 
     public:

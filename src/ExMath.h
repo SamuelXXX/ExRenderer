@@ -205,6 +205,11 @@ namespace ExRenderer
             w = 1;
         }
 
+        static Vector4 zero()
+        {
+            return Vector4(0,0,0,0);
+        }
+
         Vector3 xyz()
         {
             return Vector3(x,y,z);
