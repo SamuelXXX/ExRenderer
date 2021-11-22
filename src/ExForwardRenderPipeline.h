@@ -67,6 +67,7 @@ namespace ExRenderer
         void DrawWireMesh(Mesh<VT> &, const Color &);
         template <class VT, class FT>
         void Rasterization(Shader<VT, FT> &, FT &, FT &, FT &, bool);
+
         template <class VT, class FT>
         void RenderTriangle(Shader<VT, FT> &, const VT &, const VT &, const VT &);
         template <class VT, class FT>
@@ -302,7 +303,7 @@ namespace ExRenderer
             FragRenderJob<VT, FT>::yMin = min_sy;
             FragRenderJob<VT, FT>::yMax = max_sy;
 
-            jobScheduler.PrepareScheduler(fragCount * sizeof(FragRenderJob<VT, FT>));
+            jobScheduler.PrepareScheduler<FragRenderJob<VT, FT>>(fragCount);
             for (int i = 0; i < fragCount; i += batchCount)
             {
                 jobScheduler.PushJob<FragRenderJob<VT, FT>>(i, i + batchCount);
@@ -355,15 +356,14 @@ namespace ExRenderer
         }
         else
         {
-            jobScheduler.PrepareScheduler(vertexCount * sizeof(VertRenderJob<VT, FT>));
-            int segCount = vertexCount / MAX_THREADS + 1;
-            for (int i = 0; i < vertexCount; i += segCount)
+            jobScheduler.PrepareScheduler<VertRenderJob<VT, FT>>(vertexCount);
+            int batchCount = vertexCount / MAX_THREADS + 1;
+            for (int i = 0; i < vertexCount; i += batchCount)
             {
-                int endIndex = i + segCount;
+                int endIndex = i + batchCount;
                 if (endIndex > vertexCount)
                     endIndex = vertexCount;
-                VertRenderJob<VT, FT> *job = jobScheduler.MakeJob<VertRenderJob<VT, FT>>(i, endIndex);
-                jobScheduler.PushJob(job);
+                jobScheduler.PushJob<VertRenderJob<VT, FT>>(i, endIndex);
             }
             jobScheduler.Schedule();
         }
@@ -390,11 +390,10 @@ namespace ExRenderer
                 RasterizationJob<VT, FT>::fragments = fragments;
                 RasterizationJob<VT, FT>::shaderPtr = &shader;
 
-                jobScheduler.PrepareScheduler(mesh.TriangleCount() * sizeof(RasterizationJob<VT, FT>));
+                jobScheduler.PrepareScheduler<RasterizationJob<VT, FT>>(mesh.TriangleCount());
                 for (auto &m : mesh)
                 {
-                    RasterizationJob<VT, FT> *job = jobScheduler.MakeJob<RasterizationJob<VT, FT>>(m.index1, m.index2, m.index3);
-                    jobScheduler.PushJob(job);
+                    jobScheduler.PushJob<RasterizationJob<VT, FT>>(m.index1, m.index2, m.index3);
                 }
                 jobScheduler.Schedule();
             }

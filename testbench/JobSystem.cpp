@@ -19,7 +19,7 @@ namespace ExRenderer::Testbench::JobSystem
     {
         JobScheduler jobScheduler;
 
-        jobScheduler.PrepareScheduler(200*sizeof(DemoJob));
+        jobScheduler.PrepareScheduler<DemoJob>(200);
         for(int i=0;i<100;++i)
         {
             jobScheduler.PushJob<DemoJob>(i);

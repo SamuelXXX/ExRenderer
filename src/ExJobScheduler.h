@@ -44,8 +44,10 @@ namespace ExRenderer
         size_t jobDataBufferCursor;
 
     public:
-        void PrepareScheduler(size_t size)
+        template <class JobType>
+        void PrepareScheduler(size_t maxJobCount)
         {
+            size_t size=maxJobCount*sizeof(JobType);
             if(size>jobDataBufferSize)
             {
                 if(jobDataBuffer!=nullptr)

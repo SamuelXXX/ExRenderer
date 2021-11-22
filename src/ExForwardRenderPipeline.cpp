@@ -84,7 +84,7 @@ namespace ExRenderer
             ClearScreenJob::renderer=this;
             ClearScreenJob::color=color;
 
-            jobScheduler.PrepareScheduler(m_height*sizeof(ClearScreenJob));
+            jobScheduler.PrepareScheduler<ClearScreenJob>(m_height);
             for(int i=0;i<m_height;++i)
             {
                 jobScheduler.PushJob<ClearScreenJob>(i);
