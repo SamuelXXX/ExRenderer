@@ -14,6 +14,7 @@ namespace ExRenderer::Testbench::Diffuse
         Vector3 position;
         Vector3 normal;
         Vector3 lightDir;
+        Vector3 worldPos;
 
         FragmentData operator*(number_t ratio)
         {
@@ -21,6 +22,7 @@ namespace ExRenderer::Testbench::Diffuse
             result.position=position*ratio;
             result.normal=normal*ratio;
             result.lightDir=lightDir*ratio;
+            result.worldPos=worldPos*ratio;
             return result;
         }
 
@@ -30,6 +32,7 @@ namespace ExRenderer::Testbench::Diffuse
             result.position=position+other.position;
             result.normal=normal+other.normal;
             result.lightDir=lightDir+other.lightDir;
+            result.worldPos=worldPos+other.worldPos;
             return result;
         }
     };
@@ -37,8 +40,6 @@ namespace ExRenderer::Testbench::Diffuse
     class DiffuseShader:public Shader<VertexData,FragmentData>
     {
         Vector4 baseColor;
-        Vector3 worldLightPos;
-        Vector4 worldLightColor;
 
     public:
         DiffuseShader()
@@ -46,12 +47,7 @@ namespace ExRenderer::Testbench::Diffuse
             zTest = ZTestType::LessEqual;
             zWrite = true;
             doubleSide=false;
-        }
-
-        void SetLight(const Vector3& pos,const Vector4&color)
-        {
-            worldLightPos=pos;
-            worldLightColor=color;
+            multiLightPass=true;
         }
 
         void SetBaseColor(const Vector4& color)
@@ -66,7 +62,8 @@ namespace ExRenderer::Testbench::Diffuse
             
             result.position=MVPMatrix*vertex.position;
             result.normal = (modelMatrix*Vector4(vertex.normal,0)).xyz();
-            result.lightDir=modelMatrix*vertex.position-worldLightPos;
+            result.worldPos=modelMatrix*vertex.position;
+            result.lightDir= GetLightDirection(result.worldPos);
             return result;
         }
         Vector4 FragmentShader(const FragmentData &fragment) override
@@ -77,7 +74,7 @@ namespace ExRenderer::Testbench::Diffuse
             if(diffuse<0)
                 diffuse=0;
             
-            Vector4 color=worldLightColor*diffuse+Vector4(0.5,0.5,0.5,1);
+            Vector4 color=GetLightColor(fragment.worldPos)*diffuse+Vector4(0.5,0.5,0.5,1);
             color.x*=baseColor.x;
             color.y*=baseColor.y;
             color.z*=baseColor.z;
@@ -97,8 +94,12 @@ namespace ExRenderer::Testbench::Diffuse
         static float angle=0;
         angle+=renderer.deltaTime;
         lightPosition=Vector3(3*cos(angle),1,3*sin(angle));
+
+        renderer.ClearLights();
+        renderer.AddLight<PointLight>(lightPosition,Vector4(15,15,15,5));
+        lightPosition=Vector3(3*cos(angle+3.1415926),1,3*sin(angle+3.1415926));
+        renderer.AddLight<PointLight>(lightPosition,Vector4(15,0,0,5));
         
-        diffShader.SetLight(lightPosition,Vector4(2,2,2,1));
         diffShader.SetBaseColor(Vector4(0.3,0.7,0.2,1));
 
         renderer.Clear(Color(128, 128, 128, 255));
