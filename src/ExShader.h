@@ -70,10 +70,10 @@ namespace ExRenderer
             }
             switch(dstBlend)
             {
-                case BlendType::Zero:srcRatio=0;break;
-                case BlendType::One:srcRatio=1;break;
-                case BlendType::SrcAlpha:srcRatio=srcColor.w;break;
-                case BlendType::OneMinusSrcAlpha:srcRatio=1-srcColor.w;break;
+                case BlendType::Zero:dstRatio=0;break;
+                case BlendType::One:dstRatio=1;break;
+                case BlendType::SrcAlpha:dstRatio=srcColor.w;break;
+                case BlendType::OneMinusSrcAlpha:dstRatio=1-srcColor.w;break;
             }
 
             return (srcColor*srcRatio+dstColor*dstRatio)/(srcRatio+dstRatio);
