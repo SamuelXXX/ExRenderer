@@ -143,9 +143,9 @@ namespace ExRenderer::Testbench::MultiLight
         lightPosition=Vector3(3*cos(angle),1,3*sin(angle));
 
         renderer.ClearLights();
-        renderer.AddLight<PointLight>(lightPosition,Vector4(15,15,15,5));
+        renderer.AddLight<PointLight>(lightPosition,Vector4(10,10,30,5));
         lightPosition=Vector3(3*cos(angle+3.1415926),1,3*sin(angle+3.1415926));
-        renderer.AddLight<PointLight>(lightPosition,Vector4(15,0,0,5));
+        renderer.AddLight<PointLight>(lightPosition,Vector4(30,10,10,5));
         
         renderer.Clear(Color(128, 128, 128, 255));
         renderer.SetCameraParams(3.1415/2,0.5,100);
