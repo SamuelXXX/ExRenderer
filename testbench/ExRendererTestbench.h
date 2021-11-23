@@ -24,5 +24,10 @@ namespace ExRenderer::Testbench
     {
         void Test();
     }
+
+    namespace MultiLight
+    {
+        void Test();
+    }
 }
 #endif

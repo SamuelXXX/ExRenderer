@@ -76,7 +76,7 @@ namespace ExRenderer
                 case BlendType::OneMinusSrcAlpha:dstRatio=1-srcColor.w;break;
             }
 
-            return (srcColor*srcRatio+dstColor*dstRatio)/(srcRatio+dstRatio);
+            return (srcColor*srcRatio+dstColor*dstRatio);
         }
 
 
