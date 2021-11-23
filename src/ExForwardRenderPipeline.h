@@ -308,10 +308,11 @@ namespace ExRenderer
                 return;
             }
 
-            Vector4 color = shader.FragmentShader(rf);
-            Color trueColor = Utils::ConvertColor(color);
+            Vector4 srcColor = shader.FragmentShader(rf);
+            Vector4 dstColor=m_frame.GetPixelVec4(x,y);
+            Vector4 finalColor=shader.Blend(srcColor,dstColor);
 
-            m_frame.SetPixel(x, y, trueColor);
+            m_frame.SetPixelVec4(x, y, finalColor);
             if (zTestPassed && shader.zWrite)
             {
                 m_depth.SetDepth(x, y, rf.position.z);

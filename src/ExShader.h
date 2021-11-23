@@ -17,6 +17,14 @@ namespace ExRenderer
             NotEqual
         };
 
+    enum BlendType{
+            Zero=0,
+            One,
+            SrcAlpha,
+            OneMinusSrcAlpha
+    };
+    
+
     template <class VT, class FT>
     class Shader
     {   
@@ -32,12 +40,43 @@ namespace ExRenderer
         ZTestType zTest;
         bool zWrite;
         bool doubleSide;
+        BlendType srcBlend;
+        BlendType dstBlend;
 
         Shader<VT,FT>()
         {
             zTest=ZTestType::LessEqual;
             zWrite=true;
             doubleSide=false;
+            srcBlend=BlendType::One;
+            dstBlend=BlendType::Zero;
+        }
+
+        Vector4 Blend(const Vector4 &srcColor,const Vector4 &dstColor)
+        {
+            if(srcBlend==BlendType::One&&dstBlend==BlendType::Zero)
+            {
+                return srcColor;
+            }
+
+            float srcRatio=1;
+            float dstRatio=0;
+            switch(srcBlend)
+            {
+                case BlendType::Zero:srcRatio=0;break;
+                case BlendType::One:srcRatio=1;break;
+                case BlendType::SrcAlpha:srcRatio=srcColor.w;break;
+                case BlendType::OneMinusSrcAlpha:srcRatio=1-srcColor.w;break;
+            }
+            switch(dstBlend)
+            {
+                case BlendType::Zero:srcRatio=0;break;
+                case BlendType::One:srcRatio=1;break;
+                case BlendType::SrcAlpha:srcRatio=srcColor.w;break;
+                case BlendType::OneMinusSrcAlpha:srcRatio=1-srcColor.w;break;
+            }
+
+            return (srcColor*srcRatio+dstColor*dstRatio)/(srcRatio+dstRatio);
         }
 
 

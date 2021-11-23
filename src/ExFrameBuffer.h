@@ -2,6 +2,7 @@
 #define __EXFRAMEBUFFER_H__
 
 #include <stdint.h>
+#include "ExMath.h"
 
 namespace ExRenderer
 {
@@ -41,6 +42,8 @@ namespace ExRenderer
         void SetPixel(uint32_t, uint32_t, const Color &);
         void SetPixel(uint32_t, uint32_t, uint8_t, uint8_t, uint8_t, uint8_t);
         Color GetPixel(uint32_t, uint32_t);
+        void SetPixelVec4(uint32_t, uint32_t, const Vector4&);
+        Vector4 GetPixelVec4(uint32_t, uint32_t);
         void MixPixel(uint32_t, uint32_t, const Color &, uint32_t);
 
     public: // Primitive

@@ -87,6 +87,65 @@ namespace ExRenderer
         return Color(m_buffer[idx+2],m_buffer[idx+1],m_buffer[idx],m_buffer[idx+3]);
     }
 
+    inline Color VecToColor(const Vector4 &colorVec)
+    {
+        uint8_t r,g,b,a;
+        if(colorVec.x>1)
+        {
+            r=255;
+        } 
+        else
+        {
+            r=colorVec.x*255;
+        }
+
+        if(colorVec.y>1)
+        {
+            g=255;
+        } 
+        else
+        {
+            g=colorVec.y*255;
+        }
+
+        if(colorVec.z>1)
+        {
+            b=255;
+        } 
+        else
+        {
+            b=colorVec.z*255;
+        }
+
+        if(colorVec.w>1)
+        {
+            a=255;
+        } 
+        else
+        {
+            a=colorVec.w*255;
+        }
+
+        return Color(r,g,b,a);
+    }
+
+    inline Vector4 ColorToVec(const Color &color)
+    {
+        number_t x,y,z,w;
+        return Vector4(color.r/(255.0),color.g/(255.0),color.b/(255.0),color.a/(255.0));
+    }
+
+    void FrameBuffer::SetPixelVec4(uint32_t x, uint32_t y, const Vector4 &color)
+    {
+        SetPixel(x,y,VecToColor(color));
+
+    }
+
+    Vector4 FrameBuffer::GetPixelVec4(uint32_t x, uint32_t y)
+    {
+        return ColorToVec(GetPixel(x,y));
+    }
+
     void FrameBuffer::MixPixel(uint32_t x, uint32_t y, const Color &color, uint32_t alpha)
     {
         if(x<m_width&&y<m_height)
