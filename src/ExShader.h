@@ -32,14 +32,12 @@ namespace ExRenderer
         ZTestType zTest;
         bool zWrite;
         bool doubleSide;
-        bool multiLightPass;
 
         Shader<VT,FT>()
         {
             zTest=ZTestType::LessEqual;
             zWrite=true;
             doubleSide=false;
-            multiLightPass=false;
         }
 
 

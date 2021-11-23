@@ -47,7 +47,6 @@ namespace ExRenderer::Testbench::Diffuse
             zTest = ZTestType::LessEqual;
             zWrite = true;
             doubleSide=false;
-            multiLightPass=true;
         }
 
         void SetBaseColor(const Vector4& color)

@@ -86,6 +86,10 @@ namespace ExRenderer
             }
             m_lights.clear();
         }
+        size_t Size()
+        {
+            return m_lights.size();
+        }
 
     public:
         std::vector<Light *>::iterator begin()

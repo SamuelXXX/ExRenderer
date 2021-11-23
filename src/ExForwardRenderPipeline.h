@@ -94,6 +94,15 @@ namespace ExRenderer
     {
         lightManager.AddLight<LT>(args...);
     }
+    Light *FirstLight()
+    {
+        if(lightManager.Size()==0)
+        {
+            return nullptr;
+        }
+        return (*(lightManager.begin()));
+    }
+    
 
     public:
         void Clear(const Color &);
@@ -114,12 +123,17 @@ namespace ExRenderer
         void RenderTriangle(Shader<VT, FT> &, const VT &, const VT &, const VT &);
         template <class VT, class FT>
         void RenderMesh(Mesh<VT> &, Shader<VT, FT> &);
+        template <class VT, class FT>
+        void RenderTriangleMultiLightPass(Shader<VT, FT> &, const VT &, const VT &, const VT &);
+        template <class VT, class FT>
+        void RenderMeshMultiLightPass(Mesh<VT> &, Shader<VT, FT> &);
 
     private:
         template <class VT, class FT>
-        void _renderMeshOneLightPass(Mesh<VT> &, Shader<VT, FT> &,Light *);
+        void _renderTriangle(Shader<VT, FT> &, const VT &, const VT &, const VT &);
         template <class VT, class FT>
-        void _renderTriangleOneLightPass(Shader<VT, FT> &, const VT &, const VT &, const VT &,Light *);
+        void _renderMesh(Mesh<VT> &, Shader<VT, FT> &);
+
     };
 
     template <class VT, class FT>
@@ -374,27 +388,33 @@ namespace ExRenderer
     void ForwardPipelineRenderer::RenderTriangle(Shader<VT, FT> &shader, const VT &v1, const VT &v2, const VT &v3)
     {
         shader.InjectConsts(modelMatrix, viewMatrix, projectionMatrix);
-        if(shader.multiLightPass)
-        {
-            for(auto light:lightManager)
-            {
-                _renderTriangleOneLightPass(shader,v1,v2,v3,light);
-            }
-        }
-        else
-        {
-            _renderTriangleOneLightPass(shader,v1,v2,v3,nullptr);
-        }
+        shader.InjectLight(FirstLight());
+
+        _renderTriangle(shader,v1,v2,v3);
     }
 
     template <class VT, class FT>
-    void ForwardPipelineRenderer::_renderTriangleOneLightPass(Shader<VT, FT> &shader, const VT &v1, const VT &v2, const VT &v3,Light *lightPtr)
+    void ForwardPipelineRenderer::RenderTriangleMultiLightPass(Shader<VT, FT> &shader, const VT &v1, const VT &v2, const VT &v3)
     {
-        shader.InjectLight(lightPtr);
+        shader.InjectConsts(modelMatrix, viewMatrix, projectionMatrix);
+
+        for(auto light:lightManager)
+        {
+            if(light==FirstLight())
+                continue;
+
+            shader.InjectLight(light);
+            _renderTriangle(shader,v1,v2,v3);
+        }
+        
+    }
+
+    template <class VT, class FT>
+    void ForwardPipelineRenderer::_renderTriangle(Shader<VT, FT> &shader, const VT &v1, const VT &v2, const VT &v3)
+    {
         FT f1 = shader.VertexShader(v1);
         FT f2 = shader.VertexShader(v2);
         FT f3 = shader.VertexShader(v3);
-
         Rasterization(shader, f1, f2, f3, enableRenderBoost);
     }
 
@@ -402,25 +422,29 @@ namespace ExRenderer
     void ForwardPipelineRenderer::RenderMesh(Mesh<VT> &mesh, Shader<VT, FT> &shader)
     {
         shader.InjectConsts(modelMatrix, viewMatrix, projectionMatrix);
+        shader.InjectLight(FirstLight());
 
-        if(shader.multiLightPass)
+        _renderMesh(mesh,shader);
+    }
+
+    template <class VT, class FT>
+    void ForwardPipelineRenderer::RenderMeshMultiLightPass(Mesh<VT> &mesh, Shader<VT, FT> &shader)
+    {
+        shader.InjectConsts(modelMatrix, viewMatrix, projectionMatrix);
+
+        for(auto light:lightManager)
         {
-            for(auto light:lightManager)
-            {
-                _renderMeshOneLightPass(mesh,shader,light);
-            }
-        }
-        else
-        {
-            _renderMeshOneLightPass(mesh,shader,nullptr);
+            if(light==FirstLight())
+                continue;
+
+            shader.InjectLight(light);
+            _renderMesh(mesh,shader);
         }
     }
 
     template <class VT, class FT>
-    void ForwardPipelineRenderer::_renderMeshOneLightPass(Mesh<VT> &mesh, Shader<VT, FT> &shader,Light *lightPtr)
+    void ForwardPipelineRenderer::_renderMesh(Mesh<VT> &mesh, Shader<VT, FT> &shader)
     {
-        shader.InjectLight(lightPtr);
-
         uint32_t vertexCount = mesh.VertexCount();
         const VT *vertices = mesh.GetVerticeBuffer();
         FT *fragments = new FT[vertexCount];
@@ -484,6 +508,7 @@ namespace ExRenderer
 
         delete[] fragments;
     }
+
 
 }
 
