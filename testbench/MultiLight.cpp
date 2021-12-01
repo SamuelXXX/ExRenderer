@@ -7,6 +7,7 @@ namespace ExRenderer::Testbench::MultiLight
     {
         Vector3 position;
         Vector3 normal;
+        Vector2 uv;
     };
 
     struct FragmentData

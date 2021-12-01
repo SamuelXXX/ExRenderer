@@ -33,10 +33,10 @@ namespace ExRenderer
         int index2=index0+2;
         int index3=index0+3;
 
-        v0.position=pos0;v0.normal=normal;
-        v1.position=pos1;v1.normal=normal;
-        v2.position=pos2;v2.normal=normal;
-        v3.position=pos3;v3.normal=normal;
+        v0.position=pos0;v0.normal=normal;v0.uv=Vector2(0,0);
+        v1.position=pos1;v1.normal=normal;v1.uv=Vector2(1,0);
+        v2.position=pos2;v2.normal=normal;v2.uv=Vector2(1,1);
+        v3.position=pos3;v3.normal=normal;v3.uv=Vector2(0,1);
 
         vertices.push_back(v0);
         vertices.push_back(v1);
@@ -79,6 +79,21 @@ namespace ExRenderer
 
         mBuilder.AppendQuad(rub,rdb,rdf,ruf,Vector3(1,0,0));
         mBuilder.AppendQuad(luf,ldf,ldb,lub,Vector3(-1,0,0));
+          
+        return mBuilder.GenerateMesh();
+    }
+
+    template<class VT>
+    Mesh<VT> MeshBuilder<VT>::Quad()
+    {
+        MeshBuilder mBuilder;
+        Vector3 lu(-0.5, 0.5, 0); // lu 
+        Vector3 ru(0.5, 0.5, 0); // ru
+        Vector3 rd(0.5, -0.5, 0); // rd
+        Vector3 ld(-0.5, -0.5, 0); // ld
+
+
+        mBuilder.AppendQuad(lu,ru,rd,ld,Vector3(0,0,1));
           
         return mBuilder.GenerateMesh();
     }

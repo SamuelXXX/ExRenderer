@@ -2,35 +2,109 @@
 
 namespace ExRenderer::Testbench::Texture
 {
+    struct VertexData
+    {
+        Vector3 position;
+        Vector3 normal;
+        Vector2 uv;
+        Vector3 color;
+    };
+
+    struct FragmentData
+    {
+        Vector3 position;
+        Vector2 uv;
+
+        FragmentData operator*(number_t ratio)
+        {
+            FragmentData result;
+            result.position=position*ratio;
+            result.uv=uv*ratio;
+            return result;
+        }
+
+        FragmentData operator+(const FragmentData &other)
+        {
+            FragmentData result;
+            result.position=position+other.position;
+            result.uv=uv+other.uv;
+            return result;
+        }
+    };
+
+    class UnlitTexShader : public Shader<VertexData, FragmentData>
+    {
+        ExRenderer::Texture m_texture;
+    public:
+        UnlitTexShader()
+        {
+            zTest = ZTestType::LessEqual;
+            zWrite = true;
+            doubleSide=true;
+            srcBlend=BlendType::SrcAlpha;
+            dstBlend=BlendType::OneMinusSrcAlpha;
+        }
+
+    public:
+        void SetTexture(ExRenderer::Texture tex)
+        {
+            m_texture=tex;
+        }
+
+        FragmentData VertexShader(const VertexData &vertex) override
+        {
+            FragmentData result;
+            result.position=MVPMatrix*vertex.position;
+            result.uv=vertex.uv;
+            return result;
+        }
+        Vector4 FragmentShader(const FragmentData &fragment) override
+        {
+            number_t x=fragment.uv.x;
+            number_t y=fragment.uv.y;
+            x=(int)(x/0.1)*0.1;
+            y=(int)(y/0.1)*0.1;
+            return Vector4(x,1-x,0,1);
+            // return m_texture.SampleRGBA(fragment.uv);
+        }
+    };
+
+    void UpdateRenderer(ForwardPipelineRenderer &renderer)
+    {
+        static UnlitTexShader texShader;
+        static Mesh<VertexData> cubeMesh=MeshBuilder<VertexData>::Quad();
+        static ExRenderer::Texture tex("res/textures/Earth.png");
+
+        static Vector3 position1(0,0,0);
+        static Vector3 rotation1(0,0,0);
+
+        float deltaTime=renderer.deltaTime;
+        rotation1=rotation1+Vector3(0,deltaTime/5,deltaTime/5);
+        
+        texShader.SetTexture(tex);
+
+        renderer.Clear(Color(128, 128, 128, 255));
+        renderer.SetCameraParams(3.1415/2,0.5,100);
+        renderer.SetCameraTransform(Vector3(0,0,-2),Vector3::zero());
+
+        renderer.SetModelTransform(position1,rotation1); // Cube1
+        renderer.RenderMesh(cubeMesh,texShader);
+        renderer.DrawWireMesh(cubeMesh,Color(0,0,255,255));
+        // renderer.RenderCoordinate();
+        // renderer.RenderDepth();
+    }
+
     void Test()
     {
-        SDL_Init(SDL_INIT_EVERYTHING);
-
-        ExRenderer::Texture tex("res/textures/Architecture.jpg");
-        ExRenderer::Texture another=tex;
-        tex.Info();
-        tex=nullptr;
-
-        SDL_Window* sdlWindow = SDL_CreateWindow("Texture", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, another.GetWidth(), another.GetHeight(), 0);
-        SDL_Renderer* sdlRenderer = SDL_CreateRenderer(sdlWindow, -1, SDL_RENDERER_ACCELERATED);
-        SDL_Texture *sdlTexture = SDL_CreateTexture(sdlRenderer, another.GetFormat(), SDL_TEXTUREACCESS_STREAMING, another.GetWidth(), another.GetHeight());
-
-        // SDL_Texture *sdlTexture = SDL_CreateTextureFromSurface(sdlRenderer,image);
-        
-        SDL_UpdateTexture(sdlTexture, nullptr, another.GetPixels(), another.GetPitch());
-
+        ForwardPipelineRenderer fRenderer("Texture",800, 800);
+        // fRenderer.enableRenderBoost=false;
         while (true)
         {
-
-            SDL_RenderCopy(sdlRenderer, sdlTexture, nullptr, nullptr);
-            SDL_RenderPresent(sdlRenderer);
-
-            SDL_Event event;
-            SDL_PollEvent(&event);
-            if(event.type==SDL_QUIT) break;
+            UpdateRenderer(fRenderer);
+            if(fRenderer.UpdateEnv())
+            {
+                break;
+            }
         }
-        
-        SDL_DestroyRenderer(sdlRenderer);
-        SDL_DestroyWindow(sdlWindow);
     }
 }

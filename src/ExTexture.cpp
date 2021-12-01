@@ -312,7 +312,7 @@ namespace ExRenderer
         }
         if(m_rawImage->format->Amask!=0)
         {
-            b=samplePixelChannel(targetPixel,m_rawImage->format->Amask,m_rawImage->format->Ashift);
+            a=samplePixelChannel(targetPixel,m_rawImage->format->Amask,m_rawImage->format->Ashift);
         }
 
         return Vector4(r,g,b,a);

@@ -7,6 +7,7 @@ namespace ExRenderer::Testbench::Basic
     {
         Vector3 position;
         Vector3 normal;
+        Vector2 uv;
         Vector3 color;
     };
 

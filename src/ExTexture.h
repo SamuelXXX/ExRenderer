@@ -33,6 +33,7 @@ namespace ExRenderer
         }
 
     public:
+        Texture()=default;
         Texture(const char *);
         Texture(const Texture &);
         Texture(Texture &&);
@@ -73,35 +74,8 @@ namespace ExRenderer
     inline number_t Texture::samplePixelChannel(uint8_t *p,Uint32 mask,Uint8 shift)
     {
         uint32_t val=0;
-        switch (m_rawImage->format->BytesPerPixel)
-        {
-        case 1:
-        {
-            uint8_t pixel=*(uint8_t *)p;
-            val=(pixel&mask)>>shift;
-        }
-            break;
-        case 2:
-        {
-            uint16_t pixel=*(uint16_t *)p;
-            val=(pixel&mask)>>shift;
-        }
-            break;
-        case 3:
-        {
-            uint32_t pixel=*(uint32_t *)(p-1);
-            val=(pixel&mask)>>shift;
-        }
-            break;
-        case 4:
-        {
-            uint32_t pixel=*(uint32_t *)p;
-            val=(pixel&mask)>>shift;
-        }
-            break;
-        default:
-            break;
-        }
+        uint32_t pixel=*(uint32_t *)p;
+        val=(pixel&mask)>>shift;
 
         return (float)val/(mask>>shift);
     }

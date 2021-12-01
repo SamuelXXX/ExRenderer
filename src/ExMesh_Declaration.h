@@ -76,6 +76,7 @@ namespace ExRenderer
     public:
         static Mesh<VT> Cube();
         static Mesh<VT> Sphere();
+        static Mesh<VT> Quad();
 
     public:
         void AddVertex(const VT &vertice);
