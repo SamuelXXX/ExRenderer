@@ -68,8 +68,53 @@ namespace ExRenderer
         std::cout<<"Ashift:"<<(int)m_rawImage->format->Ashift<<std::endl;
     }
 
-    SDL_Surface *Texture::GetRawImage()
+    void *Texture::GetPixels()
     {
-        return m_rawImage;
+        if(m_rawImage==nullptr)
+        {
+            return nullptr;
+        }
+
+        return m_rawImage->pixels;
+    }
+
+    int Texture::GetWidth()
+    {
+        if(m_rawImage==nullptr)
+        {
+            return 0;
+        }
+
+        return m_rawImage->w;
+    }
+
+    int Texture::GetHeight()
+    {
+        if(m_rawImage==nullptr)
+        {
+            return 0;
+        }
+
+        return m_rawImage->h;
+    }
+
+    Uint32 Texture::GetFormat()
+    {
+        if(m_rawImage==nullptr)
+        {
+            return 0;
+        }
+
+        return m_rawImage->format->format;
+    }
+
+    int Texture::GetPitch()
+    {
+        if(m_rawImage==nullptr)
+        {
+            return 0;
+        }
+
+        return m_rawImage->pitch;
     }
 }

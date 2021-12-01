@@ -40,7 +40,12 @@ namespace ExRenderer
         Texture& operator=(Texture&&);
         public:
         void Info();
-        SDL_Surface *GetRawImage();
+        void *GetPixels();
+        int GetWidth();
+        int GetHeight();
+        Uint32 GetFormat();
+        int GetPitch();
+
     };
 }
 
