@@ -60,12 +60,12 @@ namespace ExRenderer::Testbench::Texture
         }
         Vector4 FragmentShader(const FragmentData &fragment) override
         {
-            number_t x=fragment.uv.x;
-            number_t y=fragment.uv.y;
-            x=(int)(x/0.1)*0.1;
-            y=(int)(y/0.1)*0.1;
-            return Vector4(x,1-x,0,1);
-            // return m_texture.SampleRGBA(fragment.uv);
+            // number_t x=fragment.uv.x;
+            // number_t y=fragment.uv.y;
+            // x=(int)(x/0.1)*0.1;
+            // y=(int)(y/0.1)*0.1;
+            // return Vector4(x,1-x,0,1);
+            return m_texture.SampleRGBA(fragment.uv);
         }
     };
 

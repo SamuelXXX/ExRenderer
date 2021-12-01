@@ -28,10 +28,11 @@ namespace ExRenderer
         Matrix4x4 viewMatrix;
         Matrix4x4 projectionMatrix;
         Matrix4x4 mvpMatrix;
+        Matrix4x4 inverseP;
 
         LightPackManager lightManager;
 
-        void updateMvpMatrix() { mvpMatrix = projectionMatrix * viewMatrix * modelMatrix; }
+        void updateMvpMatrix() { mvpMatrix = projectionMatrix * viewMatrix * modelMatrix; inverseP=projectionMatrix.Inverse();}
 
     private:
         uint64_t currentFrame;
@@ -113,7 +114,7 @@ namespace ExRenderer
         void RenderCoordinate();
 
         template <class VT, class FT>
-        void RenderFragment(Shader<VT, FT> &, const Matrix3x3 &, int32_t, int32_t, FT &, FT &, FT &);
+        void RenderFragment(Shader<VT, FT> &, const Matrix3x3 &, int32_t, int32_t, FT &, FT &, FT &,const Vector3&);
         template <class VT>
         void DrawWireMesh(Mesh<VT> &, const Color &);
         template <class VT, class FT>
@@ -200,6 +201,7 @@ namespace ExRenderer
         static ForwardPipelineRenderer *renderer;
         static Shader<VT, FT> *shaderPtr;
         static Matrix3x3 *weightMatrixPtr;
+        static Vector3 *zForPCIPtr;
         static FT *f1Ptr;
         static FT *f2Ptr;
         static FT *f3Ptr;
@@ -225,7 +227,7 @@ namespace ExRenderer
                 int col = i % rowLength;
                 int x = col + xMin;
                 int y = row + yMin;
-                renderer->RenderFragment(*shaderPtr, *weightMatrixPtr, x, y, *f1Ptr, *f2Ptr, *f3Ptr);
+                renderer->RenderFragment(*shaderPtr, *weightMatrixPtr, x, y, *f1Ptr, *f2Ptr, *f3Ptr, *zForPCIPtr);
             }
         }
     };
@@ -235,6 +237,8 @@ namespace ExRenderer
     Shader<VT, FT> *FragRenderJob<VT, FT>::shaderPtr = nullptr;
     template <class VT, class FT>
     Matrix3x3 *FragRenderJob<VT, FT>::weightMatrixPtr = nullptr;
+    template <class VT, class FT>
+    Vector3 *FragRenderJob<VT, FT>::zForPCIPtr = nullptr;
     template <class VT, class FT>
     FT *FragRenderJob<VT, FT>::f1Ptr = nullptr;
     template <class VT, class FT>
@@ -265,7 +269,7 @@ namespace ExRenderer
     }
 
     template <class VT, class FT>
-    void ForwardPipelineRenderer::RenderFragment(Shader<VT, FT> &shader, const Matrix3x3 &weightMatrix, int32_t x, int32_t y, FT &f1, FT &f2, FT &f3)
+    void ForwardPipelineRenderer::RenderFragment(Shader<VT, FT> &shader, const Matrix3x3 &weightMatrix, int32_t x, int32_t y, FT &f1, FT &f2, FT &f3,const Vector3& zForPCI)
     {
         Vector3 weight = weightMatrix * Vector3(x + 0.5, y + 0.5, 1);
 
@@ -274,10 +278,9 @@ namespace ExRenderer
         number_t w2b=weight.y;
         number_t w3b=weight.z;
 
-        Matrix4x4 inverseP=projectionMatrix.Inverse();
-        number_t z1=(inverseP*f1.position).z;
-        number_t z2=(inverseP*f2.position).z;
-        number_t z3=(inverseP*f3.position).z;
+        number_t z1=zForPCI.x;
+        number_t z2=zForPCI.y;
+        number_t z3=zForPCI.z;
 
         number_t sum=w1b*z2*z3+w2b*z1*z3+w3b*z1*z2;
         number_t w1=w1b*z2*z3/sum;
@@ -365,6 +368,12 @@ namespace ExRenderer
                                Vector3(sp3.x, sp3.y, 1));
         weightMatrix = weightMatrix.Inverse();
 
+        number_t z1=(inverseP*f1.position).z;
+        number_t z2=(inverseP*f2.position).z;
+        number_t z3=(inverseP*f3.position).z;
+
+        Vector3 zForPCI=Vector3(z1,z2,z3);
+
         uint32_t fragCount = (max_sy - min_sy + 1) * (max_sx - min_sx + 1);
         int batchCount = fragCount / MAX_THREADS + 1;
 
@@ -373,6 +382,7 @@ namespace ExRenderer
             FragRenderJob<VT, FT>::renderer = this;
             FragRenderJob<VT, FT>::shaderPtr = &shader;
             FragRenderJob<VT, FT>::weightMatrixPtr = &weightMatrix;
+            FragRenderJob<VT,FT>::zForPCIPtr = &zForPCI;
             FragRenderJob<VT, FT>::f1Ptr = &f1;
             FragRenderJob<VT, FT>::f2Ptr = &f2;
             FragRenderJob<VT, FT>::f3Ptr = &f3;
@@ -394,7 +404,7 @@ namespace ExRenderer
             {
                 for (int y = min_sy; y <= max_sy; y++)
                 {
-                    RenderFragment(shader, weightMatrix, x, y, f1, f2, f3);
+                    RenderFragment(shader, weightMatrix, x, y, f1, f2, f3, zForPCI);
                 }
             }
         }
