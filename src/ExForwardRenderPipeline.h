@@ -269,9 +269,24 @@ namespace ExRenderer
     {
         Vector3 weight = weightMatrix * Vector3(x + 0.5, y + 0.5, 1);
 
-        if (weight.x >= -0.00 && weight.y >= -0.00 && weight.z >= -0.00)
+        // Correction of perspective interplotation
+        number_t w1b=weight.x;
+        number_t w2b=weight.y;
+        number_t w3b=weight.z;
+
+        Matrix4x4 inverseP=projectionMatrix.Inverse();
+        number_t z1=(inverseP*f1.position).z;
+        number_t z2=(inverseP*f2.position).z;
+        number_t z3=(inverseP*f3.position).z;
+
+        number_t sum=w1b*z2*z3+w2b*z1*z3+w3b*z1*z2;
+        number_t w1=w1b*z2*z3/sum;
+        number_t w2=w2b*z1*z3/sum;
+        number_t w3=w3b*z2*z1/sum;
+
+        if (w1 >= -0.00 && w2 >= -0.00 && w3 >= -0.00)
         {
-            FT rf = f1 * weight.x + f2 * weight.y + f3 * weight.z;
+            FT rf = f1 * w1 + f2 * w2 + f3 * w3;
 
             if (rf.position.z < -1 || rf.position.z > 1)
                 return;
