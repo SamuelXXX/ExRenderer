@@ -16,6 +16,7 @@ namespace ExRenderer::Testbench::Texture
         // SDL_Texture *sdlTexture = SDL_CreateTextureFromSurface(sdlRenderer,image);
         
         SDL_UpdateTexture(sdlTexture, nullptr, image->pixels, image->pitch);
+        std::cout<<"Refcount:"<<image->refcount<<std::endl;
 
         
         tex.Info();
