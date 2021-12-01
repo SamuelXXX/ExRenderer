@@ -7,10 +7,45 @@ namespace ExRenderer
         m_rawImage=IMG_Load_RW(SDL_RWFromFile(filePath,"rb"),1);
     }
 
+    Texture::Texture(const Texture& other)
+    {
+        m_rawImage=nullptr;
+        safeAassignImage(other.m_rawImage);
+    }
+
+    Texture::Texture(Texture&& other)
+    {
+        m_rawImage=other.m_rawImage;
+        other.m_rawImage=nullptr;
+    }
+
+    Texture& Texture::operator=(const Texture& other)
+    {
+        safeAassignImage(other.m_rawImage);
+        return *this;
+    }
+
+    Texture& Texture::operator=(Texture&& other)
+    {
+        if(m_rawImage!=nullptr)
+        {
+            m_rawImage->refcount--;
+            if(m_rawImage->refcount==0)
+            {
+                std::cout<<"Free Surface"<<std::endl;
+                SDL_FreeSurface(m_rawImage);
+            }
+        }
+
+        m_rawImage=other.m_rawImage;
+        other.m_rawImage=nullptr;
+
+        return *this;
+    }
+
     Texture::~Texture()
     {
-        SDL_FreeSurface(m_rawImage);
-        m_rawImage=nullptr;
+        safeAassignImage(nullptr);
     }
 
     void Texture::Info()

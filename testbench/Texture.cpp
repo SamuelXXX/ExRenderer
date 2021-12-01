@@ -7,7 +7,8 @@ namespace ExRenderer::Testbench::Texture
         SDL_Init(SDL_INIT_EVERYTHING);
 
         ExRenderer::Texture tex("res/textures/Architecture.jpg");
-        SDL_Surface *image=tex.GetRawImage();
+        ExRenderer::Texture another=tex;
+        SDL_Surface *image=another.GetRawImage();
 
         SDL_Window* sdlWindow = SDL_CreateWindow("Texture", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, image->w, image->h, 0);
         SDL_Renderer* sdlRenderer = SDL_CreateRenderer(sdlWindow, -1, SDL_RENDERER_ACCELERATED);
