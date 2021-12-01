@@ -3,5 +3,6 @@
 
 #include "ExJobScheduler.h"
 #include "ExForwardRenderPipeline.h"
+#include "ExTexture.h"
 
 #endif

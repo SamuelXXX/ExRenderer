@@ -8,10 +8,18 @@ namespace ExRenderer
 {
     class Texture
     {
-        SDL_Texture *m_texture;
-        void Load()
-        {
-        }
+        public:
+        SDL_Surface *m_rawImage;
+        public:
+        Texture(const char *);
+        Texture(const Texture&)=delete;
+        Texture(Texture&&)=delete;
+        ~Texture();
+        Texture& operator=(const Texture&)=delete;
+        Texture& operator=(Texture&&)=delete;
+        public:
+        void Info();
+        SDL_Surface *GetRawImage();
     };
 }
 

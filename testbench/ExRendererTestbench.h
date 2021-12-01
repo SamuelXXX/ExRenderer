@@ -29,5 +29,10 @@ namespace ExRenderer::Testbench
     {
         void Test();
     }
+
+    namespace Texture
+    {
+        void Test();
+    }
 }
 #endif
