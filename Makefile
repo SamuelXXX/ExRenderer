@@ -32,21 +32,21 @@ OBJ_FILES:=$(EXRD_OBJ_FILES) $(TEST_OBJ_FILES)
 
 SDL_LIB_PATH:=libs/lib
 SDL_INC_PATH:=libs/include
-SDL_DLL_FILE:=$(TARGET_PATH)\SDL2.dll
-SDL_DLL_FROM_FILE:=libs\bin\SDL2.dll
+
+DLL_FILES:=$(patsubst libs/bin/%.dll, $(TARGET_PATH)/%.dll, $(wildcard libs/bin/*.dll))
 
 
 # default task, check directory and build .exe and .lib files
-all:$(EXE_FILE) $(SDL_DLL_FILE)
+all:$(EXE_FILE) $(DLL_FILES) copyres
 
 $(EXE_FILE) : $(OBJ_FILES)
 	@echo Linking Executable : $@
 	@mkdir $(@D)||:
-	@g++ $^ -o $@ -L$(SDL_LIB_PATH) -lmingw32 -lSDL2main -lSDL2 
+	@g++ $^ -o $@ -L$(SDL_LIB_PATH) -lmingw32 -lSDL2main -lSDL2 -lSDL2_image
 
-$(SDL_DLL_FILE):$(SDL_DLL_FROM_FILE)
-	@echo Copy SDL dll files
-	@copy $(SDL_DLL_FROM_FILE) $(SDL_DLL_FILE)
+$(TARGET_PATH)/%.dll:libs/bin/%.dll
+	@echo Copy SDL dll files-libs\bin\$*.dll $(TARGET_PATH)\$*.dll
+	@copy libs\bin\$*.dll $(TARGET_PATH)\$*.dll
 
 $(EXRD_OBJ_PATH)/%.o : $(EXRD_SRC_PATH)/%.cpp $(EXRD_HEADER_FILES)
 	@echo Building EXRD Object : $@
@@ -59,7 +59,7 @@ $(TEST_OBJ_PATH)/%.o : $(TEST_SRC_PATH)/%.cpp $(EXRD_HEADER_FILES) $(TEST_HEADER
 	@g++ $< $(CXXFLAGS) -o $@ -I$(SDL_INC_PATH)
 
 
-.PHONY : clean chkdir cleanexe cleanobj
+.PHONY : clean chkdir cleanexe cleanobj copyres
 clean : cleanlib cleanexe cleanobj
 cleanexe:
 	@del $(TARGET_PATH)\*.exe
@@ -67,5 +67,9 @@ cleanlib:
 	@del $(LIB_PATH)\*.lib
 cleanobj:
 	@for /r $(OBJ_PATH) %%i in (*.o) do del /q %%i
+copyres:
+	@rmdir $(TARGET_PATH)\res /s/q||:
+	@mkdir $(TARGET_PATH)\res||:
+	@xcopy res $(TARGET_PATH)\res /e/q
 	
 
